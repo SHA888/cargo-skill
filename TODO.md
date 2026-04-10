@@ -7,7 +7,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 0. Project bootstrap
 
-- [ ] 0.1 — Register `cargo-skill` on crates.io (reserve the name)
+- [x] 0.1 — Register `cargo-skill` on crates.io (reserve the name) v0.0.1
 - [x] 0.2 — Create GitHub repository `cargo-skill`
 - [x] 0.3 — Add `LICENSE-MIT` and `LICENSE-APACHE` files
 - [x] 0.4 — Add `.gitignore` (standard Rust: `target/`, `.skill/`)
