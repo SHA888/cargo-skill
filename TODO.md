@@ -30,13 +30,13 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 1. Asset preparation
 
-- [ ] 1.1 — Split unified `SKILL.md` into three asset files
+- [x] 1.1 — Split unified `SKILL.md` into three asset files
   - `assets/rust/layer1.md` — Lookup (rule index, prefix sections)
   - `assets/rust/layer2.md` — Reasoning (cognitive model, routing, error ref)
   - `assets/rust/layer3.md` — Execution (RPI loop, verification checklist)
-- [ ] 1.2 — Ensure Layer 1 section headers use consistent prefix markers
+- [x] 1.2 — Ensure Layer 1 section headers use consistent prefix markers
   - Format: `**<prefix>-** …` per section for line-range extraction
-- [ ] 1.3 — Verify all three layers render correctly as standalone markdown
+- [x] 1.3 — Verify all three layers render correctly as standalone markdown
 
 ---
 
