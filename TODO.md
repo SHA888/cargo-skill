@@ -42,16 +42,16 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 2. CLI skeleton (`src/main.rs`)
 
-- [ ] 2.1 — Add `clap` dependency (latest stable, derive feature)
-- [ ] 2.2 — Add `anyhow` dependency (latest stable)
-- [ ] 2.3 — Define `Cli` struct with `Commands` enum via clap derive
+- [x] 2.1 — Add `clap` dependency (latest stable, derive feature)
+- [x] 2.2 — Add `anyhow` dependency (latest stable)
+- [x] 2.3 — Define `Cli` struct with `Commands` enum via clap derive
   - `Init`
   - `Lookup { prefix: Option<String> }`
   - `Think`
   - `Write`
   - `Clear`
-- [ ] 2.4 — Implement main dispatch to subcommand handlers (stubs)
-- [ ] 2.5 — Verify `cargo skill --help` output is correct
+- [x] 2.4 — Implement main dispatch to subcommand handlers (stubs)
+- [x] 2.5 — Verify `cargo skill --help` output is correct
 
 ---
 
