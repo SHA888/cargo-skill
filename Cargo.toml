@@ -1,0 +1,17 @@
+[package]
+name = "cargo-skill"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+description = "A Cargo subcommand for deploying and activating layered AI agent skills in Rust projects"
+repository = "https://github.com/SHA888/cargo-skill"
+keywords = ["cargo", "subcommand", "ai", "agent", "skill"]
+categories = ["command-line-utilities", "development-tools"]
+authors = ["cargo-skill contributors"]
+
+[[bin]]
+name = "cargo-skill"
+path = "src/main.rs"
+
+[dependencies]

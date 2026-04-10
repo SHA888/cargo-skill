@@ -8,18 +8,18 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 ## 0. Project bootstrap
 
 - [ ] 0.1 — Register `cargo-skill` on crates.io (reserve the name)
-- [ ] 0.2 — Create GitHub repository `cargo-skill`
-- [ ] 0.3 — Add `LICENSE-MIT` and `LICENSE-APACHE` files
-- [ ] 0.4 — Add `.gitignore` (standard Rust: `target/`, `.skill/`)
-- [ ] 0.5 — Initialize `Cargo.toml` with correct metadata
+- [x] 0.2 — Create GitHub repository `cargo-skill`
+- [x] 0.3 — Add `LICENSE-MIT` and `LICENSE-APACHE` files
+- [x] 0.4 — Add `.gitignore` (standard Rust: `target/`, `.skill/`)
+- [x] 0.5 — Initialize `Cargo.toml` with correct metadata
   - `name = "cargo-skill"`
   - `edition = "2024"`
   - `rust-version = "1.85"`
   - `license = "MIT OR Apache-2.0"`
   - `description`, `repository`, `keywords`, `categories`
-- [ ] 0.6 — Add `README.md` (already drafted)
-- [ ] 0.7 — Add `ARCHITECTURE.md` (already drafted)
-- [ ] 0.8 — Set up GitHub Actions CI workflow
+- [x] 0.6 — Add `README.md` (already drafted)
+- [x] 0.7 — Add `ARCHITECTURE.md` (already drafted)
+- [x] 0.8 — Set up GitHub Actions CI workflow
   - `cargo check`
   - `cargo clippy -- -D warnings`
   - `cargo fmt --check`
