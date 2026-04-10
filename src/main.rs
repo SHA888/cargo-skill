@@ -1,4 +1,5 @@
 mod detect;
+mod skill;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};

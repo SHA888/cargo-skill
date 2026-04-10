@@ -80,20 +80,20 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 4. Skill content loader (`src/skill/`)
 
-- [ ] 4.1 — Implement `layer.rs`
+- [x] 4.1 — Implement `layer.rs`
   - `Layer` enum: `Lookup`, `Reasoning`, `Execution`
   - `LayerSet` struct: bitfield or `Vec<Layer>`
   - Mapping: `lookup` → `[Lookup]`, `think` → `[Lookup, Reasoning]`,
     `write` → `[Lookup, Reasoning, Execution]`
-- [ ] 4.2 — Implement `mod.rs`
+- [x] 4.2 — Implement `mod.rs`
   - Embed assets via `include_str!()` at compile time
   - `load(layers: &LayerSet) -> String` — concatenate requested layers
-- [ ] 4.3 — Implement `prefix.rs`
+- [x] 4.3 — Implement `prefix.rs`
   - `VALID_PREFIXES` constant list
   - `validate(prefix: &str) -> Result<()>` — error on unknown prefix
   - `filter(content: &str, prefix: &str) -> String` — extract matching section
     from Layer 1 content by prefix marker
-- [ ] 4.4 — Unit tests for `prefix::filter()`
+- [x] 4.4 — Unit tests for `prefix::filter()`
   - Known prefix returns correct section
   - Unknown prefix returns error
   - Empty prefix returns full Layer 1
