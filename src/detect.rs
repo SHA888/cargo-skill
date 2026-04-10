@@ -15,7 +15,9 @@ pub enum RepoKind {
 /// Information about the detected repository
 #[derive(Debug, Clone)]
 pub struct Repo {
+    #[allow(dead_code)]
     pub kind: RepoKind,
+    #[allow(dead_code)]
     pub root: PathBuf,
 }
 
@@ -30,6 +32,7 @@ pub enum Agent {
 
 impl Agent {
     /// Returns the install path for the skill file relative to repo root
+    #[allow(dead_code)]
     pub fn skill_path(&self) -> PathBuf {
         match self {
             Agent::ClaudeCode => PathBuf::from(".claude/skills/rust.md"),
@@ -41,6 +44,7 @@ impl Agent {
 }
 
 /// Walk up from current directory to find Cargo.toml
+#[allow(dead_code)]
 pub fn repo() -> Result<Repo> {
     let cwd = env::current_dir().context("Failed to get current directory")?;
     let mut path = cwd.as_path();
@@ -61,19 +65,18 @@ pub fn repo() -> Result<Repo> {
         }
     }
 
-    anyhow::bail!(
-        "No Cargo.toml found in current directory or any parent. Not a Rust project?"
-    )
+    anyhow::bail!("No Cargo.toml found in current directory or any parent. Not a Rust project?")
 }
 
 /// Determine if the Cargo.toml represents a workspace or single crate
+#[allow(dead_code)]
 fn determine_repo_kind(cargo_toml: &Path) -> Result<RepoKind> {
     let contents = fs::read_to_string(cargo_toml)
         .with_context(|| format!("Failed to read {}", cargo_toml.display()))?;
 
-    // Check for [workspace] section
-    // This is a simple check; we look for the string "[workspace]"
-    if contents.contains("[workspace]") {
+    // Check for [workspace] section at start of line
+    // This avoids false positives from [workspace] appearing in comments/strings
+    if contents.lines().any(|line| line.trim() == "[workspace]") {
         Ok(RepoKind::Workspace)
     } else {
         Ok(RepoKind::SingleCrate)
@@ -81,6 +84,7 @@ fn determine_repo_kind(cargo_toml: &Path) -> Result<RepoKind> {
 }
 
 /// Detect which AI agents are present in the repository
+#[allow(dead_code)]
 pub fn agents(repo_root: &Path) -> Vec<Agent> {
     let mut detected = Vec::new();
 
@@ -106,7 +110,6 @@ pub fn agents(repo_root: &Path) -> Vec<Agent> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
     use tempfile::TempDir;
 
     #[test]

@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 
 /// Valid prefixes for filtering Layer 1 content
 pub const VALID_PREFIXES: &[&str] = &[
@@ -19,11 +19,12 @@ pub const VALID_PREFIXES: &[&str] = &[
 ];
 
 /// Validate that a prefix is known
+#[allow(dead_code)]
 pub fn validate(prefix: &str) -> Result<()> {
     if prefix.is_empty() {
         return Ok(());
     }
-    
+
     if VALID_PREFIXES.contains(&prefix) {
         Ok(())
     } else {
@@ -36,10 +37,11 @@ pub fn validate(prefix: &str) -> Result<()> {
 }
 
 /// Filter Layer 1 content to extract only sections matching the given prefix
-/// 
+///
 /// The format expects sections to start with `## **{prefix}-**`
-/// 
+///
 /// If prefix is empty, returns the full content.
+#[allow(dead_code)]
 pub fn filter(content: &str, prefix: &str) -> String {
     if prefix.is_empty() {
         return content.to_string();
@@ -69,7 +71,10 @@ pub fn filter(content: &str, prefix: &str) -> String {
     }
 
     // Build result with header and filtered section
-    let header = content.lines().next().unwrap_or("# Layer 1 — Lookup: Rust Rule Index");
+    let header = content
+        .lines()
+        .next()
+        .unwrap_or("# Layer 1 — Lookup: Rust Rule Index");
     result.push_str(header);
     result.push_str("\n\nFiltered for prefix: **");
     result.push_str(prefix);
@@ -140,5 +145,27 @@ mod tests {
         let result = filter(content, "xyz");
         assert!(result.contains("Filtered for prefix: **xyz-**"));
         assert!(!result.contains("## **own-**"));
+    }
+
+    #[test]
+    fn test_filter_with_blank_lines_between_sections() {
+        let content = r#"# Layer 1
+
+## **own-** — Ownership
+- rule 1
+
+(blank line above)
+
+## **err-** — Errors
+- error rule
+"#;
+
+        let result = filter(content, "own");
+        assert!(result.contains("Filtered for prefix: **own-**"));
+        assert!(result.contains("## **own-**"));
+        assert!(result.contains("- rule 1"));
+        assert!(result.contains("(blank line above)"));
+        assert!(!result.contains("## **err-**"));
+        assert!(!result.contains("error rule"));
     }
 }
