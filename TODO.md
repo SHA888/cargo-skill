@@ -57,21 +57,21 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 3. Repo + agent detection (`src/detect.rs`)
 
-- [ ] 3.1 — Implement `detect::repo()`
+- [x] 3.1 — Implement `detect::repo()`
   - Walk up from `cwd` to find `Cargo.toml`
   - Determine workspace (contains `[workspace]`) vs single crate
   - Return `RepoKind` enum + root path
-- [ ] 3.2 — Implement `detect::agents()`
+- [x] 3.2 — Implement `detect::agents()`
   - Check for `.claude/` directory → `Agent::ClaudeCode`
   - Check for `.cursor/` directory → `Agent::Cursor`
   - Check for `.windsurf/` directory → `Agent::Windsurf`
   - Check for `AGENTS.md` file → `Agent::AgentsMd`
   - Return `Vec<Agent>` (may be multiple)
-- [ ] 3.3 — Unit tests for `detect::repo()`
+- [x] 3.3 — Unit tests for `detect::repo()`
   - Single crate fixture
   - Workspace fixture
   - No `Cargo.toml` found (error case)
-- [ ] 3.4 — Unit tests for `detect::agents()`
+- [x] 3.4 — Unit tests for `detect::agents()`
   - No agents detected
   - Single agent
   - Multiple agents simultaneously
