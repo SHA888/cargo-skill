@@ -1,3 +1,4 @@
+mod context;
 mod deploy;
 mod detect;
 mod gitignore;

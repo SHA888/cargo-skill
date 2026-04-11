@@ -137,14 +137,14 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 7. Context writer (`src/context.rs`)
 
-- [ ] 7.1 — Implement `context::write(repo_root, content)`
+- [x] 7.1 — Implement `context::write(repo_root, content)`
   - Create `.skill/` directory if missing
   - Write `content` to `.skill/context.md`
   - Overwrite if exists
-- [ ] 7.2 — Implement `context::clear(repo_root)`
+- [x] 7.2 — Implement `context::clear(repo_root)`
   - Delete `.skill/context.md` if present
   - No-op if absent (no error)
-- [ ] 7.3 — Unit tests
+- [x] 7.3 — Unit tests
   - Write creates file + dir
   - Write overwrites existing
   - Clear removes file
