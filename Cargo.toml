@@ -2,7 +2,7 @@
 name = "cargo-skill"
 version = "0.0.1"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.94"
 license = "MIT OR Apache-2.0"
 description = "A Cargo subcommand for deploying and activating layered AI agent skills in Rust projects"
 repository = "https://github.com/SHA888/cargo-skill"
