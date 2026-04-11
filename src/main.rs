@@ -28,7 +28,13 @@ enum Commands {
 }
 
 fn main() -> Result<()> {
-    let cli = Cli::parse();
+    // When invoked as `cargo skill <cmd>`, cargo inserts "skill" as argv[1].
+    // Strip it so clap receives the correct arguments.
+    let mut args: Vec<_> = std::env::args_os().collect();
+    if args.get(1).and_then(|s| s.to_str()) == Some("skill") {
+        args.remove(1);
+    }
+    let cli = Cli::parse_from(args);
 
     match cli.command {
         Commands::Init => cmd_init(),
