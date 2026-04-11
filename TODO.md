@@ -102,19 +102,19 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 5. Deploy (`src/deploy.rs`)
 
-- [ ] 5.1 — Define agent install paths
+- [x] 5.1 — Define agent install paths
   - `ClaudeCode` → `.claude/skills/rust.md`
   - `Cursor` → `.cursor/rules/rust.md`
   - `Windsurf` → `.windsurf/rules/rust.md`
   - `AgentsMd` → append section to `AGENTS.md`
-- [ ] 5.2 — Implement `deploy::skill_files(agents, repo_root)`
+- [x] 5.2 — Implement `deploy::skill_files(agents, repo_root)`
   - Create parent directories if missing
   - Write bundled skill index (`layer1.md` content) to each agent path
   - Print confirmation per agent: `✓ deployed to .claude/skills/rust.md`
-- [ ] 5.3 — Handle `AgentsMd` case
+- [x] 5.3 — Handle `AgentsMd` case
   - If `AGENTS.md` exists, append skill section with header
   - If not, create it with skill section
-- [ ] 5.4 — Integration tests for deploy
+- [x] 5.4 — Integration tests for deploy
   - Verify files written to correct paths
   - Verify parent dirs created
   - Verify idempotent (re-running overwrites cleanly)
