@@ -170,8 +170,8 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [x] 9.3 — Confirm `cargo test` passes (unit + integration)
 - [x] 9.4 — Confirm `cargo doc --no-deps` compiles without warnings
 - [x] 9.5 — Run `cargo publish --dry-run` and resolve any issues
-- [ ] 9.6 — Tag `v0.1.0` on `main`
-- [ ] 9.7 — Publish to crates.io
+- [x] 9.6 — Tag `v0.1.0` on `main`
+- [x] 9.7 — Publish to crates.io
 
 ---
 
