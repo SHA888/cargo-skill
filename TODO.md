@@ -123,12 +123,12 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 6. Gitignore (`src/gitignore.rs`)
 
-- [ ] 6.1 — Implement `gitignore::ensure(repo_root)`
+- [x] 6.1 — Implement `gitignore::ensure(repo_root)`
   - Read `.gitignore` if present
   - Check if `.skill/` already present
   - Append `.skill/` if missing
   - Create `.gitignore` if absent
-- [ ] 6.2 — Unit tests
+- [x] 6.2 — Unit tests
   - `.gitignore` absent → created with `.skill/`
   - `.gitignore` present, entry absent → appended
   - `.gitignore` present, entry already present → no-op

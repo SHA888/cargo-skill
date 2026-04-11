@@ -1,5 +1,6 @@
 mod deploy;
 mod detect;
+mod gitignore;
 mod skill;
 
 use anyhow::Result;
