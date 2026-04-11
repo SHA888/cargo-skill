@@ -12,7 +12,6 @@ const SKILL_GITIGNORE_ENTRY: &str = ".skill/";
 /// - Checks if `.skill/` already present
 /// - Appends `.skill/` if missing
 /// - Creates `.gitignore` if absent
-#[allow(dead_code)]
 pub fn ensure(repo_root: &Path) -> Result<()> {
     let gitignore_path = repo_root.join(".gitignore");
 

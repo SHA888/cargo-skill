@@ -7,7 +7,6 @@ use std::path::Path;
 const SKILL_HEADER: &str = "# Rust Skill Reference\n\nThis section provides a quick lookup index for Rust development rules.\n";
 
 /// Deploy skill files to all detected agents
-#[allow(dead_code)]
 pub fn deploy(agents: &[Agent], repo_root: &Path) -> Result<()> {
     let skill_content = include_str!("../assets/rust/layer1.md");
 

@@ -1,10 +1,5 @@
-mod context;
-mod deploy;
-mod detect;
-mod gitignore;
-mod skill;
-
-use anyhow::Result;
+use anyhow::{Context, Result};
+use cargo_skill::{context, deploy, detect, gitignore, skill};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -46,34 +41,107 @@ fn main() -> Result<()> {
 
 fn cmd_init() -> Result<()> {
     println!("Initializing cargo-skill...");
-    // TODO: Implement repo detection, agent detection, deploy, gitignore
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+    println!(
+        "✓ detected {} repo at {}",
+        format_repo_kind(&repo.kind),
+        repo.root.display()
+    );
+
+    // Ensure .skill/ is in .gitignore (always, regardless of agents)
+    gitignore::ensure(&repo.root).context("Failed to update .gitignore")?;
+    println!("✓ ensured .skill/ is in .gitignore");
+
+    // Detect agents
+    let agents = detect::agents(&repo.root);
+    if agents.is_empty() {
+        println!("⚠ no agents detected (create .claude/, .cursor/, .windsurf/, or AGENTS.md)");
+        return Ok(());
+    }
+    for agent in &agents {
+        println!("✓ detected agent: {:?}", agent);
+    }
+
+    // Deploy skill files
+    deploy::deploy(&agents, &repo.root).context("Failed to deploy skill files")?;
+
+    println!("\nInitialization complete!");
     Ok(())
 }
 
+fn format_repo_kind(kind: &detect::RepoKind) -> &'static str {
+    match kind {
+        detect::RepoKind::SingleCrate => "single crate",
+        detect::RepoKind::Workspace => "workspace",
+    }
+}
+
 fn cmd_lookup(prefix: Option<String>) -> Result<()> {
-    if let Some(p) = prefix {
+    if let Some(ref p) = prefix {
         println!("Activating Layer 1 with prefix: {}", p);
     } else {
         println!("Activating Layer 1 (full lookup)");
     }
-    // TODO: Load layer1, filter by prefix, write context
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+
+    // Load Layer 1 with optional prefix filter
+    let content =
+        skill::load_lookup_filtered(prefix.as_deref()).context("Failed to load skill content")?;
+
+    // Write to context
+    context::write(&repo.root, &content).context("Failed to write context")?;
+
+    println!("✓ wrote context to .skill/context.md");
     Ok(())
 }
 
 fn cmd_think() -> Result<()> {
     println!("Activating Layer 1 + 2 (lookup + reasoning)");
-    // TODO: Load layers 1+2, write context
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+
+    // Load Layers 1 + 2
+    let layer_set = skill::layer::LayerSet::think();
+    let content = skill::load(&layer_set).context("Failed to load skill content")?;
+
+    // Write to context
+    context::write(&repo.root, &content).context("Failed to write context")?;
+
+    println!("✓ wrote context to .skill/context.md");
     Ok(())
 }
 
 fn cmd_write() -> Result<()> {
     println!("Activating all layers (lookup + reasoning + execution)");
-    // TODO: Load all layers, write context
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+
+    // Load all layers
+    let layer_set = skill::layer::LayerSet::write();
+    let content = skill::load(&layer_set).context("Failed to load skill content")?;
+
+    // Write to context
+    context::write(&repo.root, &content).context("Failed to write context")?;
+
+    println!("✓ wrote context to .skill/context.md");
     Ok(())
 }
 
 fn cmd_clear() -> Result<()> {
     println!("Clearing skill context...");
-    // TODO: Remove .skill/context.md
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+
+    // Clear context
+    context::clear(&repo.root).context("Failed to clear context")?;
+
+    println!("✓ cleared .skill/context.md");
     Ok(())
 }

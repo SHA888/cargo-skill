@@ -19,7 +19,6 @@ pub const VALID_PREFIXES: &[&str] = &[
 ];
 
 /// Validate that a prefix is known
-#[allow(dead_code)]
 pub fn validate(prefix: &str) -> Result<()> {
     if prefix.is_empty() {
         return Ok(());
@@ -41,7 +40,6 @@ pub fn validate(prefix: &str) -> Result<()> {
 /// The format expects sections to start with `## **{prefix}-**`
 ///
 /// If prefix is empty, returns the full content.
-#[allow(dead_code)]
 pub fn filter(content: &str, prefix: &str) -> String {
     if prefix.is_empty() {
         return content.to_string();

@@ -29,7 +29,6 @@ pub struct LayerSet {
 
 impl LayerSet {
     /// Create a LayerSet for the lookup command (Layer 1 only)
-    #[allow(dead_code)]
     pub fn lookup() -> Self {
         Self {
             layers: vec![Layer::Lookup],
@@ -37,7 +36,6 @@ impl LayerSet {
     }
 
     /// Create a LayerSet for the think command (Layers 1 + 2)
-    #[allow(dead_code)]
     pub fn think() -> Self {
         Self {
             layers: vec![Layer::Lookup, Layer::Reasoning],
@@ -45,7 +43,6 @@ impl LayerSet {
     }
 
     /// Create a LayerSet for the write command (All layers)
-    #[allow(dead_code)]
     pub fn write() -> Self {
         Self {
             layers: vec![Layer::Lookup, Layer::Reasoning, Layer::Execution],

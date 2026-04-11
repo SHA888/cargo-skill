@@ -7,7 +7,6 @@ use layer::LayerSet;
 /// Load skill content for the given layer set
 ///
 /// Assets are embedded at compile time using `include_str!()`
-#[allow(dead_code)]
 pub fn load(layers: &LayerSet) -> Result<String> {
     let mut content = String::new();
 
@@ -28,7 +27,6 @@ pub fn load(layers: &LayerSet) -> Result<String> {
 }
 
 /// Load Layer 1 content and filter by prefix (if specified)
-#[allow(dead_code)]
 pub fn load_lookup_filtered(prefix: Option<&str>) -> Result<String> {
     let content = include_str!("../../assets/rust/layer1.md");
 

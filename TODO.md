@@ -154,12 +154,12 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ## 8. Subcommand integration
 
-- [ ] 8.1 — Wire `Init` → `detect::repo()` + `detect::agents()` + `deploy::skill_files()` + `gitignore::ensure()`
-- [ ] 8.2 — Wire `Lookup(prefix)` → `skill::load([Lookup])` + `prefix::filter()` + `context::write()`
-- [ ] 8.3 — Wire `Think` → `skill::load([Lookup, Reasoning])` + `context::write()`
-- [ ] 8.4 — Wire `Write` → `skill::load([Lookup, Reasoning, Execution])` + `context::write()`
-- [ ] 8.5 — Wire `Clear` → `context::clear()`
-- [ ] 8.6 — End-to-end integration test per subcommand
+- [x] 8.1 — Wire `Init` → `detect::repo()` + `detect::agents()` + `deploy::skill_files()` + `gitignore::ensure()`
+- [x] 8.2 — Wire `Lookup(prefix)` → `skill::load([Lookup])` + `prefix::filter()` + `context::write()`
+- [x] 8.3 — Wire `Think` → `skill::load([Lookup, Reasoning])` + `context::write()`
+- [x] 8.4 — Wire `Write` → `skill::load([Lookup, Reasoning, Execution])` + `context::write()`
+- [x] 8.5 — Wire `Clear` → `context::clear()`
+- [x] 8.6 — End-to-end integration test per subcommand
 
 ---
 

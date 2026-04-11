@@ -12,7 +12,6 @@ const CONTEXT_FILE: &str = "context.md";
 /// - Creates `.skill/` directory if missing
 /// - Writes `content` to `.skill/context.md`
 /// - Overwrites if exists
-#[allow(dead_code)]
 pub fn write(repo_root: &Path, content: &str) -> Result<()> {
     let skill_dir = repo_root.join(SKILL_DIR);
     let context_path = skill_dir.join(CONTEXT_FILE);
@@ -31,7 +30,6 @@ pub fn write(repo_root: &Path, content: &str) -> Result<()> {
 /// Delete `.skill/context.md` if present
 ///
 /// - No-op if file is absent (no error)
-#[allow(dead_code)]
 pub fn clear(repo_root: &Path) -> Result<()> {
     let context_path = repo_root.join(SKILL_DIR).join(CONTEXT_FILE);
 

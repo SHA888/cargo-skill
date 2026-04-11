@@ -15,9 +15,7 @@ pub enum RepoKind {
 /// Information about the detected repository
 #[derive(Debug, Clone)]
 pub struct Repo {
-    #[allow(dead_code)]
     pub kind: RepoKind,
-    #[allow(dead_code)]
     pub root: PathBuf,
 }
 
@@ -32,7 +30,6 @@ pub enum Agent {
 
 impl Agent {
     /// Returns the install path for the skill file relative to repo root
-    #[allow(dead_code)]
     pub fn skill_path(&self) -> PathBuf {
         match self {
             Agent::ClaudeCode => PathBuf::from(".claude/skills/rust.md"),
@@ -44,7 +41,6 @@ impl Agent {
 }
 
 /// Walk up from current directory to find Cargo.toml
-#[allow(dead_code)]
 pub fn repo() -> Result<Repo> {
     let cwd = env::current_dir().context("Failed to get current directory")?;
     let mut path = cwd.as_path();
@@ -84,7 +80,6 @@ fn determine_repo_kind(cargo_toml: &Path) -> Result<RepoKind> {
 }
 
 /// Detect which AI agents are present in the repository
-#[allow(dead_code)]
 pub fn agents(repo_root: &Path) -> Vec<Agent> {
     let mut detected = Vec::new();
 
