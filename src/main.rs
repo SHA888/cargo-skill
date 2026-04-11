@@ -13,7 +13,14 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Detect repo + agents, deploy skill files
-    Init,
+    Init {
+        /// Print what would be deployed without writing any files
+        #[arg(long)]
+        dry_run: bool,
+        /// Overwrite existing skill files even if unchanged
+        #[arg(long)]
+        force: bool,
+    },
     /// Activate Layer 1 only (rule index, optional prefix filter)
     Lookup {
         /// Optional prefix filter (e.g., "own", "err", "async")
@@ -40,7 +47,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse_from(args);
 
     match cli.command {
-        Commands::Init => cmd_init(),
+        Commands::Init { dry_run, force } => cmd_init(dry_run, force),
         Commands::Lookup { prefix } => cmd_lookup(prefix),
         Commands::Think => cmd_think(),
         Commands::Write => cmd_write(),
@@ -65,8 +72,12 @@ fn main() -> Result<()> {
     }
 }
 
-fn cmd_init() -> Result<()> {
-    println!("Initializing cargo-skill...");
+fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
+    if dry_run {
+        println!("[DRY RUN] Would initialize cargo-skill...");
+    } else {
+        println!("Initializing cargo-skill...");
+    }
 
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
@@ -76,9 +87,24 @@ fn cmd_init() -> Result<()> {
         repo.root.display()
     );
 
-    // Ensure .skill/ is in .gitignore (always, regardless of agents)
-    gitignore::ensure(&repo.root).context("Failed to update .gitignore")?;
-    println!("✓ ensured .skill/ is in .gitignore");
+    // Handle .gitignore
+    let gitignore_path = repo.root.join(".gitignore");
+    let skill_entry = ".skill/";
+    let needs_gitignore = !gitignore_path.exists()
+        || !std::fs::read_to_string(&gitignore_path)
+            .map(|s| s.contains(skill_entry))
+            .unwrap_or(false);
+
+    if dry_run {
+        if needs_gitignore {
+            println!("[DRY RUN] Would add .skill/ to .gitignore");
+        } else {
+            println!("[DRY RUN] .skill/ already in .gitignore (no change)");
+        }
+    } else {
+        gitignore::ensure(&repo.root).context("Failed to update .gitignore")?;
+        println!("✓ ensured .skill/ is in .gitignore");
+    }
 
     // Detect agents
     let agents = detect::agents(&repo.root);
@@ -90,10 +116,48 @@ fn cmd_init() -> Result<()> {
         println!("✓ detected agent: {:?}", agent);
     }
 
-    // Deploy skill files
-    deploy::deploy(&agents, &repo.root).context("Failed to deploy skill files")?;
+    // Check existing skill files for force flag
+    if !force && !dry_run {
+        let existing: Vec<_> = agents
+            .iter()
+            .filter_map(|a| {
+                let path = repo.root.join(a.skill_path());
+                if path.exists() {
+                    Some(path.display().to_string())
+                } else {
+                    None
+                }
+            })
+            .collect();
+        if !existing.is_empty() {
+            println!("\n⚠ Skipping deploy — skill files already exist:");
+            for f in &existing {
+                println!("  - {}", f);
+            }
+            println!("  Use --force to overwrite");
+            println!("\nInitialization complete! (skipped deploy)");
+            return Ok(());
+        }
+    }
 
-    println!("\nInitialization complete!");
+    // Deploy skill files
+    if dry_run {
+        for agent in &agents {
+            let path = repo.root.join(agent.skill_path());
+            if force || !path.exists() {
+                println!("[DRY RUN] Would deploy to {}", path.display());
+            } else {
+                println!(
+                    "[DRY RUN] Skill file already exists at {} (use --force to overwrite)",
+                    path.display()
+                );
+            }
+        }
+        println!("\n[DRY RUN] Initialization would complete");
+    } else {
+        deploy::deploy(&agents, &repo.root).context("Failed to deploy skill files")?;
+        println!("\nInitialization complete!");
+    }
     Ok(())
 }
 

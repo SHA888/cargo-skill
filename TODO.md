@@ -25,10 +25,10 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - Error clearly on unrecognized non-prefix args
 
 ### Init improvements
-- [ ] 2.2 — `--dry-run` flag for `init`
+- [x] 2.2 — `--dry-run` flag for `init`
   - Print what would be deployed without writing any files
   - Print what `.gitignore` entry would be added
-- [ ] 2.3 — `--force` flag for `init`
+- [x] 2.3 — `--force` flag for `init`
   - Overwrite existing skill files even if unchanged
 
 ### Status command
