@@ -150,3 +150,36 @@ fn test_clear_is_idempotent() {
     let context_path = temp.path().join(".skill/context.md");
     assert!(!context_path.exists());
 }
+
+#[test]
+fn test_shorthand_prefix_dispatch_valid() {
+    let temp = setup_test_repo();
+
+    // Shorthand: "own" should work the same as lookup with prefix "own"
+    let content = skill::load_lookup_filtered(Some("own")).unwrap();
+    context::write(temp.path(), &content).unwrap();
+
+    // Verify context was written with filtered content
+    let context_path = temp.path().join(".skill/context.md");
+    assert!(context_path.exists());
+
+    let written_content = fs::read_to_string(&context_path).unwrap();
+    assert!(written_content.contains("Filtered for prefix: **own-**"));
+    assert!(written_content.contains("own-01"));
+}
+
+#[test]
+fn test_shorthand_prefixes_are_valid() {
+    // Ensure all expected prefixes are in VALID_PREFIXES
+    let expected = vec![
+        "own", "err", "mem", "api", "async", "opt", "type", "perf", "test", "doc", "name", "proj",
+        "lint", "anti",
+    ];
+    for prefix in expected {
+        assert!(
+            skill::prefix::VALID_PREFIXES.contains(&prefix),
+            "Expected prefix '{}' to be valid",
+            prefix
+        );
+    }
+}

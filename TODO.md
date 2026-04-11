@@ -8,7 +8,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 - [x] 0.1.0 — Initial release
 - [x] 0.1.1 — Fix `cargo skill <cmd>` subcommand dispatch (strip extra `skill` arg)
-- [ ] 0.1.2 — Replace corrected `layer1.md` and `layer2.md` assets
+- [x] 0.1.2 — Replace corrected `layer1.md` and `layer2.md` assets
   - `opt-` prefix restored to compiler optimization (12 rules)
   - Full error table in layer2 (E0106 → E0716 + async Send)
   - Rule specificity aligned with `leonardomso/rust-skills` source naming
@@ -18,7 +18,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 ## v0.2.0 — UX & Developer Experience
 
 ### Shorthand prefix commands
-- [ ] 2.1 — `cargo skill <prefix>` as implicit `lookup <prefix>`
+- [x] 2.1 — `cargo skill <prefix>` as implicit `lookup <prefix>`
   - Catch unrecognized subcommands that match a valid prefix
   - `cargo skill own` → equivalent to `cargo skill lookup own`
   - `cargo skill async` → equivalent to `cargo skill lookup async`

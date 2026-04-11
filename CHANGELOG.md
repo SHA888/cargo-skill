@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-11
+
+### Added
+
+- Shorthand prefix commands — `cargo skill <prefix>` is now equivalent to `cargo skill lookup <prefix>`
+  - Example: `cargo skill own` → loads ownership & borrowing rules
+  - Example: `cargo skill async` → loads async/await rules
+  - All 14 valid prefixes supported: own, err, mem, api, async, opt, type, perf, test, doc, name, proj, lint, anti
+  - Clear error message on unrecognized commands listing valid options
+
 ## [0.1.1] - 2026-04-11
 
 ### Fixed

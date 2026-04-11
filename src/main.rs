@@ -25,6 +25,9 @@ enum Commands {
     Write,
     /// Remove .skill/context.md
     Clear,
+    /// Catch unrecognized subcommands for prefix shorthand
+    #[command(external_subcommand)]
+    External(Vec<String>),
 }
 
 fn main() -> Result<()> {
@@ -42,6 +45,23 @@ fn main() -> Result<()> {
         Commands::Think => cmd_think(),
         Commands::Write => cmd_write(),
         Commands::Clear => cmd_clear(),
+        Commands::External(args) => {
+            // Shorthand: cargo skill <prefix> → cargo skill lookup <prefix>
+            if let Some(first) = args.first() {
+                let cmd = first.as_str();
+                if skill::prefix::VALID_PREFIXES.contains(&cmd) {
+                    cmd_lookup(Some(cmd.to_string()))
+                } else {
+                    anyhow::bail!(
+                        "Unknown command: '{}'.\nValid commands: init, lookup, think, write, clear\nValid prefixes for shorthand: {}",
+                        cmd,
+                        skill::prefix::VALID_PREFIXES.join(", ")
+                    )
+                }
+            } else {
+                anyhow::bail!("No command provided")
+            }
+        }
     }
 }
 
