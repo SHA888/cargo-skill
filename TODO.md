@@ -39,17 +39,36 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - Show which prefix is active if in lookup mode
   - Show `.skill/context.md` line count if present
 
+### Context injection per agent
+- [ ] 2.5 — Update `deploy.rs`: append `@.skill/context.md` footer to deployed `rust.md` for Claude Code only
+  ```markdown
+  ## Active Session Context
+  If `.skill/context.md` exists, load it now.
+  It contains the active skill layer for this session.
+  Apply it on top of this index.
+  @.skill/context.md
+  ```
+- [ ] 2.6 — Update `context.rs`: for Cursor and Windsurf, write session context to agent rules dir in addition to `.skill/context.md`
+  - `cargo skill lookup/think/write` → also writes `.cursor/rules/skill-context.md`
+  - `cargo skill lookup/think/write` → also writes `.windsurf/rules/skill-context.md`
+  - `cargo skill clear` → removes all three (`.skill/context.md`, `.cursor/rules/skill-context.md`, `.windsurf/rules/skill-context.md`)
+- [ ] 2.7 — Add agent-context paths to `.gitignore` management
+  - `.cursor/rules/skill-context.md` → gitignored
+  - `.windsurf/rules/skill-context.md` → gitignored
+
 ### Output polish
-- [ ] 2.5 — Colored terminal output via `anstream` (already a transitive dep)
+- [ ] 2.8 — Colored terminal output via `anstream` (already a transitive dep)
   - `✓` lines in green
   - Warnings in yellow
   - Errors in red
-- [ ] 2.6 — `--quiet` / `-q` flag to suppress all output except errors
+- [ ] 2.9 — `--quiet` / `-q` flag to suppress all output except errors
 
 ### Tests
-- [ ] 2.7 — Tests for shorthand prefix dispatch
-- [ ] 2.8 — Tests for `status` output correctness
-- [ ] 2.9 — Tests for `--dry-run` (no files written)
+- [ ] 2.10 — Tests for shorthand prefix dispatch
+- [ ] 2.11 — Tests for `status` output correctness
+- [ ] 2.12 — Tests for `--dry-run` (no files written)
+- [ ] 2.13 — Tests for agent-specific context file writes (Cursor, Windsurf)
+- [ ] 2.14 — Tests for `clear` removes all agent context files
 
 ---
 
