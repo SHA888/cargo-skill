@@ -40,12 +40,25 @@ fn deploy_to_file(agent: &Agent, repo_root: &Path, content: &str) -> Result<()> 
 }
 
 /// Deploy skill content to AGENTS.md (append or create)
+///
+/// This function is idempotent - if the skill content already exists in AGENTS.md,
+/// it will not be duplicated.
 #[allow(dead_code)]
 fn deploy_to_agents_md(repo_root: &Path, content: &str) -> Result<()> {
-    let path = repo_root.join("AGENTS.md");
+    let path = repo_root.join(Agent::AgentsMd.skill_path());
+    let skill_marker = "# Layer 1";
 
     if path.exists() {
-        // Append to existing file
+        // Check if skill content already exists (idempotency check)
+        let existing_content = fs::read_to_string(&path)
+            .with_context(|| format!("Failed to read {}", path.display()))?;
+
+        if existing_content.contains(skill_marker) {
+            // Skill content already exists, skip to maintain idempotency
+            return Ok(());
+        }
+
+        // Append to existing file (skill content not found)
         let mut file = fs::OpenOptions::new()
             .append(true)
             .open(&path)
@@ -59,7 +72,7 @@ fn deploy_to_agents_md(repo_root: &Path, content: &str) -> Result<()> {
         write!(file, "{}", content)?;
     } else {
         // Create new file with skill content
-        fs::write(&path, format!("{}\n{}", SKILL_HEADER, content))
+        fs::write(&path, format!("{}\n{}\n", SKILL_HEADER, content))
             .with_context(|| format!("Failed to write {}", path.display()))?;
     }
 
@@ -140,6 +153,22 @@ mod tests {
             fs::read_to_string(temp.path().join(".claude/skills/rust.md")).unwrap();
 
         assert_eq!(first_content, second_content);
+    }
+
+    #[test]
+    fn test_deploy_agents_md_is_idempotent() {
+        let temp = TempDir::new().unwrap();
+
+        // Deploy twice to AGENTS.md
+        deploy(&[Agent::AgentsMd], temp.path()).unwrap();
+        let first_content = fs::read_to_string(temp.path().join("AGENTS.md")).unwrap();
+
+        deploy(&[Agent::AgentsMd], temp.path()).unwrap();
+        let second_content = fs::read_to_string(temp.path().join("AGENTS.md")).unwrap();
+
+        assert_eq!(first_content, second_content);
+        // Should only contain one skill reference header
+        assert_eq!(first_content.matches("Rust Skill Reference").count(), 1);
     }
 
     #[test]
