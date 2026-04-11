@@ -1,187 +1,259 @@
 # TODO
 
-SemVer target: **v0.1.0**
 Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ---
 
-## 0. Project bootstrap
+## v0.1.x — Patch stabilization
 
-- [x] 0.1 — Register `cargo-skill` on crates.io (reserve the name) v0.0.1
-- [x] 0.2 — Create GitHub repository `cargo-skill`
-- [x] 0.3 — Add `LICENSE-MIT` and `LICENSE-APACHE` files
-- [x] 0.4 — Add `.gitignore` (standard Rust: `target/`, `.skill/`)
-- [x] 0.5 — Initialize `Cargo.toml` with correct metadata
-  - `name = "cargo-skill"`
-  - `edition = "2024"`
-  - `rust-version = "1.85"`
-  - `license = "MIT OR Apache-2.0"`
-  - `description`, `repository`, `keywords`, `categories`
-- [x] 0.6 — Add `README.md` (already drafted)
-- [x] 0.7 — Add `ARCHITECTURE.md` (already drafted)
-- [x] 0.8 — Set up GitHub Actions CI workflow
-  - `cargo check`
-  - `cargo clippy -- -D warnings`
-  - `cargo fmt --check`
-  - `cargo test`
-  - Trigger: push + PR to `main`
+- [x] 0.1.0 — Initial release
+- [x] 0.1.1 — Fix `cargo skill <cmd>` subcommand dispatch (strip extra `skill` arg)
+- [ ] 0.1.2 — Replace corrected `layer1.md` and `layer2.md` assets
+  - `opt-` prefix restored to compiler optimization (12 rules)
+  - Full error table in layer2 (E0106 → E0716 + async Send)
+  - Rule specificity aligned with `leonardomso/rust-skills` source naming
 
 ---
 
-## 1. Asset preparation
+## v0.2.0 — UX & Developer Experience
 
-- [x] 1.1 — Split unified `SKILL.md` into three asset files
-  - `assets/rust/layer1.md` — Lookup (rule index, prefix sections)
-  - `assets/rust/layer2.md` — Reasoning (cognitive model, routing, error ref)
-  - `assets/rust/layer3.md` — Execution (RPI loop, verification checklist)
-- [x] 1.2 — Ensure Layer 1 section headers use consistent prefix markers
-  - Format: `**<prefix>-** …` per section for line-range extraction
-- [x] 1.3 — Verify all three layers render correctly as standalone markdown
+### Shorthand prefix commands
+- [ ] 2.1 — `cargo skill <prefix>` as implicit `lookup <prefix>`
+  - Catch unrecognized subcommands that match a valid prefix
+  - `cargo skill own` → equivalent to `cargo skill lookup own`
+  - `cargo skill async` → equivalent to `cargo skill lookup async`
+  - Error clearly on unrecognized non-prefix args
 
----
+### Init improvements
+- [ ] 2.2 — `--dry-run` flag for `init`
+  - Print what would be deployed without writing any files
+  - Print what `.gitignore` entry would be added
+- [ ] 2.3 — `--force` flag for `init`
+  - Overwrite existing skill files even if unchanged
 
-## 2. CLI skeleton (`src/main.rs`)
+### Status command
+- [ ] 2.4 — `cargo skill status`
+  - Show detected repo kind (single / workspace)
+  - Show detected agents + deployed skill file paths
+  - Show current active context mode (lookup/think/write/none)
+  - Show which prefix is active if in lookup mode
+  - Show `.skill/context.md` line count if present
 
-- [x] 2.1 — Add `clap` dependency (latest stable, derive feature)
-- [x] 2.2 — Add `anyhow` dependency (latest stable)
-- [x] 2.3 — Define `Cli` struct with `Commands` enum via clap derive
-  - `Init`
-  - `Lookup { prefix: Option<String> }`
-  - `Think`
-  - `Write`
-  - `Clear`
-- [x] 2.4 — Implement main dispatch to subcommand handlers (stubs)
-- [x] 2.5 — Verify `cargo skill --help` output is correct
+### Output polish
+- [ ] 2.5 — Colored terminal output via `anstream` (already a transitive dep)
+  - `✓` lines in green
+  - Warnings in yellow
+  - Errors in red
+- [ ] 2.6 — `--quiet` / `-q` flag to suppress all output except errors
 
----
-
-## 3. Repo + agent detection (`src/detect.rs`)
-
-- [x] 3.1 — Implement `detect::repo()`
-  - Walk up from `cwd` to find `Cargo.toml`
-  - Determine workspace (contains `[workspace]`) vs single crate
-  - Return `RepoKind` enum + root path
-- [x] 3.2 — Implement `detect::agents()`
-  - Check for `.claude/` directory → `Agent::ClaudeCode`
-  - Check for `.cursor/` directory → `Agent::Cursor`
-  - Check for `.windsurf/` directory → `Agent::Windsurf`
-  - Check for `AGENTS.md` file → `Agent::AgentsMd`
-  - Return `Vec<Agent>` (may be multiple)
-- [x] 3.3 — Unit tests for `detect::repo()`
-  - Single crate fixture
-  - Workspace fixture
-  - No `Cargo.toml` found (error case)
-- [x] 3.4 — Unit tests for `detect::agents()`
-  - No agents detected
-  - Single agent
-  - Multiple agents simultaneously
+### Tests
+- [ ] 2.7 — Tests for shorthand prefix dispatch
+- [ ] 2.8 — Tests for `status` output correctness
+- [ ] 2.9 — Tests for `--dry-run` (no files written)
 
 ---
 
-## 4. Skill content loader (`src/skill/`)
+## v0.3.0 — Python/uv Skill Content
 
-- [x] 4.1 — Implement `layer.rs`
-  - `Layer` enum: `Lookup`, `Reasoning`, `Execution`
-  - `LayerSet` struct: bitfield or `Vec<Layer>`
-  - Mapping: `lookup` → `[Lookup]`, `think` → `[Lookup, Reasoning]`,
-    `write` → `[Lookup, Reasoning, Execution]`
-- [x] 4.2 — Implement `mod.rs`
-  - Embed assets via `include_str!()` at compile time
-  - `load(layers: &LayerSet) -> String` — concatenate requested layers
-- [x] 4.3 — Implement `prefix.rs`
-  - `VALID_PREFIXES` constant list
-  - `validate(prefix: &str) -> Result<()>` — error on unknown prefix
-  - `filter(content: &str, prefix: &str) -> String` — extract matching section
-    from Layer 1 content by prefix marker
-- [x] 4.4 — Unit tests for `prefix::filter()`
-  - Known prefix returns correct section
-  - Unknown prefix returns error
-  - Empty prefix returns full Layer 1
+### Asset authoring
+- [ ] 3.1 — Author `assets/python/layer1.md`
+  - Categories: typing, error, async, packaging, testing, perf, doc, name, proj, lint, anti
+  - Rules aligned with: PEP 8, PEP 484, mypy docs, uv docs, ruff docs, attrs/pydantic patterns
+- [ ] 3.2 — Author `assets/python/layer2.md`
+  - Cognitive model adapted for Python: duck typing vs structural subtyping, GIL implications
+  - Common type error quick-ref (mypy error codes)
+- [ ] 3.3 — Author `assets/python/layer3.md`
+  - RPI loop for Python: uv run, ruff check, mypy, pytest
+  - Verification checklist: `uv run ruff check`, `uv run mypy`, `uv run pytest`
 
----
+### Stack detection
+- [ ] 3.4 — Detect Python projects via `pyproject.toml` presence
+- [ ] 3.5 — Detect uv via `uv.lock` or `[tool.uv]` in `pyproject.toml`
+- [ ] 3.6 — `cargo skill init` deploys Python layers when Python stack detected
+- [ ] 3.7 — `cargo skill lookup <prefix>` routes to correct language asset
 
-## 5. Deploy (`src/deploy.rs`)
+### Multi-language context
+- [ ] 3.8 — Mixed repo support (Rust + Python in same workspace)
+  - Detect both stacks
+  - Deploy both skill files to each agent
+  - `cargo skill lookup err` → prompt user which language if ambiguous
+  - `cargo skill lookup rust:err` and `cargo skill lookup py:err` as explicit selectors
 
-- [x] 5.1 — Define agent install paths
-  - `ClaudeCode` → `.claude/skills/rust.md`
-  - `Cursor` → `.cursor/rules/rust.md`
-  - `Windsurf` → `.windsurf/rules/rust.md`
-  - `AgentsMd` → append section to `AGENTS.md`
-- [x] 5.2 — Implement `deploy::skill_files(agents, repo_root)`
-  - Create parent directories if missing
-  - Write bundled skill index (`layer1.md` content) to each agent path
-  - Print confirmation per agent: `✓ deployed to .claude/skills/rust.md`
-- [x] 5.3 — Handle `AgentsMd` case
-  - If `AGENTS.md` exists, append skill section with header
-  - If not, create it with skill section
-- [x] 5.4 — Integration tests for deploy
-  - Verify files written to correct paths
-  - Verify parent dirs created
-  - Verify idempotent (re-running overwrites cleanly)
+### Tests
+- [ ] 3.9 — Detection tests for Python/uv stack
+- [ ] 3.10 — Asset content tests (prefix filter works on Python layer1)
 
 ---
 
-## 6. Gitignore (`src/gitignore.rs`)
+## v0.4.0 — TypeScript/pnpm Skill Content
 
-- [x] 6.1 — Implement `gitignore::ensure(repo_root)`
-  - Read `.gitignore` if present
-  - Check if `.skill/` already present
-  - Append `.skill/` if missing
-  - Create `.gitignore` if absent
-- [x] 6.2 — Unit tests
-  - `.gitignore` absent → created with `.skill/`
-  - `.gitignore` present, entry absent → appended
-  - `.gitignore` present, entry already present → no-op
+### Asset authoring
+- [ ] 4.1 — Author `assets/typescript/layer1.md`
+  - Categories: types, error, async, module, testing, perf, doc, name, proj, lint, anti
+  - Rules aligned with: TypeScript handbook, pnpm docs, ESLint, Vitest, tsx patterns
+- [ ] 4.2 — Author `assets/typescript/layer2.md`
+  - Cognitive model: structural typing, type narrowing, tsc error codes
+  - Common tsc error quick-ref (TS2345, TS2322, TS7006, etc.)
+- [ ] 4.3 — Author `assets/typescript/layer3.md`
+  - RPI loop: `pnpm check`, `pnpm lint`, `pnpm test`
+  - Verification checklist aligned with pnpm scripts
 
----
+### Stack detection
+- [ ] 4.4 — Detect TypeScript via `tsconfig.json` or `package.json` with `typescript` dep
+- [ ] 4.5 — Detect pnpm via `pnpm-lock.yaml`
+- [ ] 4.6 — Deploy TypeScript layers on detection
+- [ ] 4.7 — `ts:` prefix namespace for explicit TypeScript lookups
 
-## 7. Context writer (`src/context.rs`)
-
-- [x] 7.1 — Implement `context::write(repo_root, content)`
-  - Create `.skill/` directory if missing
-  - Write `content` to `.skill/context.md`
-  - Overwrite if exists
-- [x] 7.2 — Implement `context::clear(repo_root)`
-  - Delete `.skill/context.md` if present
-  - No-op if absent (no error)
-- [x] 7.3 — Unit tests
-  - Write creates file + dir
-  - Write overwrites existing
-  - Clear removes file
-  - Clear on absent file is no-op
+### Tests
+- [ ] 4.8 — Detection tests for TypeScript/pnpm stack
+- [ ] 4.9 — Prefix routing tests for mixed Rust+TS repos
 
 ---
 
-## 8. Subcommand integration
+## v0.5.0 — Configuration
 
-- [x] 8.1 — Wire `Init` → `detect::repo()` + `detect::agents()` + `deploy::skill_files()` + `gitignore::ensure()`
-- [x] 8.2 — Wire `Lookup(prefix)` → `skill::load([Lookup])` + `prefix::filter()` + `context::write()`
-- [x] 8.3 — Wire `Think` → `skill::load([Lookup, Reasoning])` + `context::write()`
-- [x] 8.4 — Wire `Write` → `skill::load([Lookup, Reasoning, Execution])` + `context::write()`
-- [x] 8.5 — Wire `Clear` → `context::clear()`
-- [x] 8.6 — End-to-end integration test per subcommand
+### Config file (`skill.toml`)
+- [ ] 5.1 — Define `skill.toml` schema
+  ```toml
+  [agents]
+  claude = ".claude/skills"       # override default deploy path
+  cursor = ".cursor/rules"
+  windsurf = ".windsurf/rules"
+
+  [skill]
+  languages = ["rust", "python"]  # explicit language list
+
+  [context]
+  default_mode = "think"          # default mode when no command given
+  ```
+- [ ] 5.2 — Implement config file discovery (walk up from cwd, like Cargo.toml)
+- [ ] 5.3 — Merge config with defaults (config wins over auto-detection)
+- [ ] 5.4 — `cargo skill config init` — scaffold a `skill.toml` with commented defaults
+- [ ] 5.5 — `cargo skill config show` — print resolved config (file + defaults merged)
+
+### Tests
+- [ ] 5.6 — Config file parsing tests
+- [ ] 5.7 — Config override tests (custom agent paths)
+- [ ] 5.8 — Config discovery walk-up tests
 
 ---
 
-## 9. Polish + pre-publish
+## v0.6.0 — Remote Skill Fetch
 
-- [x] 9.1 — Confirm all `cargo clippy -- -D warnings` passes clean
-- [x] 9.2 — Confirm `cargo fmt --check` passes clean
-- [x] 9.3 — Confirm `cargo test` passes (unit + integration)
-- [x] 9.4 — Confirm `cargo doc --no-deps` compiles without warnings
-- [x] 9.5 — Run `cargo publish --dry-run` and resolve any issues
-- [x] 9.6 — Tag `v0.1.0` on `main`
-- [x] 9.7 — Publish to crates.io
+### Remote source support
+- [ ] 6.1 — Add `reqwest` (or `ureq` for lighter weight) behind `remote` feature flag
+- [ ] 6.2 — Define remote skill source format (GitHub shorthand: `owner/repo`)
+- [ ] 6.3 — `cargo skill fetch <source>` — fetch and cache remote skill assets
+  - `cargo skill fetch leonardomso/rust-skills`
+  - `cargo skill fetch actionbook/rust-skills`
+  - Store in `~/.cargo/skill-cache/<owner>/<repo>/`
+- [ ] 6.4 — Cache invalidation: `--refresh` flag re-fetches from remote
+- [ ] 6.5 — Offline fallback: use cache if available, error clearly if not
+
+### `skill.toml` remote sources
+- [ ] 6.6 — Add `[[sources]]` table to `skill.toml`
+  ```toml
+  [[sources]]
+  type = "git"
+  repo = "leonardomso/rust-skills"
+  layer = 1
+  ```
+- [ ] 6.7 — `cargo skill init` fetches and merges remote sources if configured
+
+### Tests
+- [ ] 6.8 — Cache write/read tests (mocked HTTP)
+- [ ] 6.9 — Offline fallback tests
+- [ ] 6.10 — Source merge tests (remote + bundled)
 
 ---
 
-## Deferred (v0.2.0+)
+## v0.7.0 — Update & Maintenance
 
-- `--dry-run` flag for `init`
-- Config file (`skill.toml`) for custom agent paths
-- Python/uv skill content (`assets/python/`)
-- TypeScript/pnpm skill content (`assets/typescript/`)
-- Remote skill fetch (`--remote` flag)
-- Skill content update check (`cargo skill update`)
-- `cargo skill status` — show what is deployed + current context mode
-- 
+### Update check
+- [ ] 7.1 — `cargo skill update` — check for newer versions of deployed skill files
+  - Compare local asset hash against remote
+  - Print diff summary (categories changed, rules added/removed)
+  - `--apply` flag to actually update
+
+### Version pinning
+- [ ] 7.2 — Pin remote skill source versions in `skill.lock`
+  - SHA-based locking for reproducible deployments
+  - `cargo skill lock` — regenerate `skill.lock`
+
+### Self-update awareness
+- [ ] 7.3 — On `init` or `status`, check if newer `cargo-skill` version exists on crates.io
+  - Print one-line notice: `cargo-skill v0.7.1 available — cargo install cargo-skill`
+  - Suppress with `--no-update-check`
+
+### Tests
+- [ ] 7.4 — Hash comparison tests
+- [ ] 7.5 — Lock file generation + validation tests
+
+---
+
+## v0.8.0 — Workspace & Multi-Crate Intelligence
+
+### Workspace-aware deployment
+- [ ] 8.1 — Detect workspace root vs member crate
+- [ ] 8.2 — Deploy shared skill to workspace root
+- [ ] 8.3 — Support per-crate override `skill.toml`
+  - Member crate `skill.toml` overrides workspace root config
+  - `cargo skill init --member` deploys only to current crate
+
+### Crate-specific skill narrowing
+- [ ] 8.4 — Parse member crate `Cargo.toml` dependencies to narrow active rules
+  - Crate uses `tokio` → `async-` rules active
+  - Crate uses `serde` → include serde-specific api- rules
+  - Crate has `no_std` in lib.rs → suppress `mem-arena`, `async-*`, std-specific rules
+- [ ] 8.5 — `cargo skill init --narrow` — deploy narrowed skill file based on deps
+
+### Tests
+- [ ] 8.6 — Workspace detection + root vs member deploy tests
+- [ ] 8.7 — Dependency-based narrowing tests
+
+---
+
+## v0.9.0 — Pre-1.0 Polish
+
+### Stability & correctness
+- [ ] 9.1 — Audit all error messages for clarity and actionability
+- [ ] 9.2 — Ensure all `anyhow` errors have `.context()` at every boundary
+- [ ] 9.3 — Windows path handling audit (`PathBuf` throughout, no `/` hardcoding)
+- [ ] 9.4 — CI matrix: Linux + macOS + Windows
+
+### Documentation
+- [ ] 9.5 — Full rustdoc on all public items
+- [ ] 9.6 — `docs/` directory with:
+  - `layers.md` — full prefix reference for all languages
+  - `agents.md` — per-agent integration guide
+  - `config.md` — `skill.toml` schema reference
+- [ ] 9.7 — Update README to reflect all commands through v0.9.0
+
+### Performance
+- [ ] 9.8 — Benchmark `init` on large workspaces (100+ crates)
+- [ ] 9.9 — Benchmark `lookup` prefix filter (should be <5ms)
+
+### Test coverage
+- [ ] 9.10 — Coverage report via `cargo-tarpaulin`; target ≥ 80%
+- [ ] 9.11 — Fuzz `prefix::filter()` with `cargo-fuzz`
+
+---
+
+## v1.0.0 — Stable Release
+
+- [ ] 1.0.1 — Final API review: no breaking changes planned post-1.0
+- [ ] 1.0.2 — Deprecation policy documented in `CONTRIBUTING.md`
+- [ ] 1.0.3 — MSRV policy documented: track latest stable - 2
+- [ ] 1.0.4 — Security policy (`SECURITY.md`) added
+- [ ] 1.0.5 — `cargo publish` v1.0.0 with complete changelog
+- [ ] 1.0.6 — GitHub Release with binary artifacts (via `cargo-dist`)
+- [ ] 1.0.7 — Announce on r/rust, This Week in Rust
+
+---
+
+## Ongoing (all versions)
+
+- Keep `CHANGELOG.md` updated per release
+- SemVer: breaking CLI changes → major bump, new commands → minor, fixes → patch
+- All new commands must have `--help` text before merge
+- CI must pass on all three platforms before any publish
