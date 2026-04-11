@@ -32,6 +32,8 @@ enum Commands {
     Write,
     /// Remove .skill/context.md
     Clear,
+    /// Show repo status, agents, and active context
+    Status,
     /// Catch unrecognized subcommands for prefix shorthand
     #[command(external_subcommand)]
     External(Vec<String>),
@@ -52,6 +54,7 @@ fn main() -> Result<()> {
         Commands::Think => cmd_think(),
         Commands::Write => cmd_write(),
         Commands::Clear => cmd_clear(),
+        Commands::Status => cmd_status(),
         Commands::External(args) => {
             // Shorthand: cargo skill <prefix> → cargo skill lookup <prefix>
             if let Some(first) = args.first() {
@@ -234,4 +237,79 @@ fn cmd_clear() -> Result<()> {
 
     println!("✓ cleared .skill/context.md");
     Ok(())
+}
+
+fn cmd_status() -> Result<()> {
+    println!("cargo-skill status\n");
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+    println!("Repository:");
+    println!("  Kind: {}", format_repo_kind(&repo.kind));
+    println!("  Root: {}", repo.root.display());
+
+    // Detect agents
+    let agents = detect::agents(&repo.root);
+    println!("\nAgents detected: {}", agents.len());
+    for agent in &agents {
+        let path = repo.root.join(agent.skill_path());
+        let deployed = if path.exists() { "✓" } else { "✗" };
+        println!("  {} {:?} -> {}", deployed, agent, path.display());
+    }
+    if agents.is_empty() {
+        println!("  (none — create .claude/, .cursor/, .windsurf/, or AGENTS.md)");
+    }
+
+    // Check context.md
+    let context_path = repo.root.join(".skill/context.md");
+    println!("\nContext:");
+    if context_path.exists() {
+        let content =
+            std::fs::read_to_string(&context_path).context("Failed to read context.md")?;
+        let lines = content.lines().count();
+        let (mode, prefix) = detect_context_mode(&content);
+        println!("  Status: active ({}, {} lines)", mode, lines);
+        if let Some(p) = prefix {
+            println!("  Prefix: {}", p);
+        }
+    } else {
+        println!("  Status: none (run `cargo skill lookup|think|write` to activate)");
+    }
+
+    // Check .gitignore
+    let gitignore_path = repo.root.join(".gitignore");
+    let gitignore_ok = gitignore_path.exists()
+        && std::fs::read_to_string(&gitignore_path)
+            .map(|s| s.contains(".skill/"))
+            .unwrap_or(false);
+    println!("\nGitignore:");
+    if gitignore_ok {
+        println!("  ✓ .skill/ is ignored");
+    } else {
+        println!("  ✗ .skill/ is NOT in .gitignore (run `cargo skill init`)");
+    }
+
+    Ok(())
+}
+
+/// Detect the context mode by analyzing context.md content
+fn detect_context_mode(content: &str) -> (&'static str, Option<&str>) {
+    let first_line = content.lines().next().unwrap_or("");
+
+    // Check for prefix filter
+    let prefix = content
+        .lines()
+        .find(|l| l.contains("Filtered for prefix:"))
+        .and_then(|l| l.split("**").nth(1))
+        .map(|s| s.trim_end_matches('-'));
+
+    if first_line.contains("Layer 3") || content.contains("Layer 3") {
+        ("write", prefix)
+    } else if first_line.contains("Layer 2") || content.contains("Layer 2") {
+        ("think", prefix)
+    } else if first_line.contains("Layer 1") || content.contains("Layer 1") {
+        ("lookup", prefix)
+    } else {
+        ("unknown", None)
+    }
 }

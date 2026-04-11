@@ -32,7 +32,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - Overwrite existing skill files even if unchanged
 
 ### Status command
-- [ ] 2.4 — `cargo skill status`
+- [x] 2.4 — `cargo skill status`
   - Show detected repo kind (single / workspace)
   - Show detected agents + deployed skill file paths
   - Show current active context mode (lookup/think/write/none)

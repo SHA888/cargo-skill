@@ -24,19 +24,26 @@ which skill layer the agent uses for the current session.
 
 ```
 cargo skill init                  Detect repo + agents, deploy skill files
+cargo skill init --dry-run        Preview what would be deployed
+cargo skill init --force          Overwrite existing skill files
+
 cargo skill lookup [prefix]       Activate Layer 1 only (rule index, optional prefix filter)
 cargo skill think                 Activate Layer 1 + 2 (lookup + reasoning)
 cargo skill write                 Activate all layers (lookup + reasoning + execution)
 cargo skill clear                 Remove .skill/context.md
+
+cargo skill status                Show repo, agents, context, and gitignore status
 ```
 
-### Prefix filter examples
+### Quick prefix shorthand
 
 ```
-cargo skill lookup own            Ownership & borrowing rules only
-cargo skill lookup async          Async/await rules only
-cargo skill lookup err            Error handling rules only
+cargo skill own            # Same as: cargo skill lookup own
+cargo skill async          # Same as: cargo skill lookup async
+cargo skill err            # Same as: cargo skill lookup err
 ```
+
+All 14 prefixes work: `own`, `err`, `mem`, `api`, `async`, `opt`, `type`, `perf`, `test`, `doc`, `name`, `proj`, `lint`, `anti`
 
 See [skill layer reference](docs/layers.md) for all available prefixes.
 
@@ -77,7 +84,7 @@ gitignored, overwritten on each invocation, deleted by `clear`.
 
 ---
 
-## Skill content (v0.1.0)
+## Skill content (v0.2.2)
 
 Bundled skill covers Rust only. Three layers:
 
