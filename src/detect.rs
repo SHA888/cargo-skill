@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 pub enum RepoKind {
     /// Single crate with a single Cargo.toml
     SingleCrate,
-    /// Workspace with [workspace] section in root Cargo.toml
+    /// Workspace with `[workspace]` section in root Cargo.toml
     Workspace,
 }
 
