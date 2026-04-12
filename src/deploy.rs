@@ -6,6 +6,14 @@ use std::path::Path;
 
 const SKILL_HEADER: &str = "# Rust Skill Reference\n\nThis section provides a quick lookup index for Rust development rules.\n";
 
+const CLAUDE_CONTEXT_FOOTER: &str = r#"
+## Active Session Context
+If `.skill/context.md` exists, load it now.
+It contains the active skill layer for this session.
+Apply it on top of this index.
+@.skill/context.md
+"#;
+
 /// Deploy skill files to all detected agents
 pub fn deploy(agents: &[Agent], repo_root: &Path) -> Result<()> {
     let skill_content = include_str!("../assets/rust/layer1.md");
@@ -32,8 +40,16 @@ fn deploy_to_file(agent: &Agent, repo_root: &Path, content: &str) -> Result<()> 
             .with_context(|| format!("Failed to create directory {}", parent.display()))?;
     }
 
+    // Build content: skill + context footer (Claude Code only)
+    let full_content = if matches!(agent, Agent::ClaudeCode) {
+        format!("{}{}", content, CLAUDE_CONTEXT_FOOTER)
+    } else {
+        content.to_string()
+    };
+
     // Write the skill file
-    fs::write(&path, content).with_context(|| format!("Failed to write {}", path.display()))?;
+    fs::write(&path, full_content)
+        .with_context(|| format!("Failed to write {}", path.display()))?;
 
     Ok(())
 }
@@ -182,5 +198,31 @@ mod tests {
         assert!(temp.path().join(".claude/skills/rust.md").exists());
         assert!(temp.path().join(".cursor/rules/rust.md").exists());
         assert!(temp.path().join("AGENTS.md").exists());
+    }
+
+    #[test]
+    fn test_deploy_claude_gets_context_footer() {
+        let temp = TempDir::new().unwrap();
+        deploy(&[Agent::ClaudeCode], temp.path()).unwrap();
+
+        let skill_path = temp.path().join(".claude/skills/rust.md");
+        let content = fs::read_to_string(&skill_path).unwrap();
+
+        // Claude Code should have the context footer
+        assert!(content.contains("## Active Session Context"));
+        assert!(content.contains("@.skill/context.md"));
+    }
+
+    #[test]
+    fn test_deploy_cursor_no_context_footer() {
+        let temp = TempDir::new().unwrap();
+        deploy(&[Agent::Cursor], temp.path()).unwrap();
+
+        let skill_path = temp.path().join(".cursor/rules/rust.md");
+        let content = fs::read_to_string(&skill_path).unwrap();
+
+        // Cursor should NOT have the context footer
+        assert!(!content.contains("## Active Session Context"));
+        assert!(!content.contains("@.skill/context.md"));
     }
 }

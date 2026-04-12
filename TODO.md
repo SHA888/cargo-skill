@@ -40,7 +40,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - Show `.skill/context.md` line count if present
 
 ### Context injection per agent
-- [ ] 2.5 — Update `deploy.rs`: append `@.skill/context.md` footer to deployed `rust.md` for Claude Code only
+- [x] 2.5 — Update `deploy.rs`: append `@.skill/context.md` footer to deployed `rust.md` for Claude Code only
   ```markdown
   ## Active Session Context
   If `.skill/context.md` exists, load it now.
