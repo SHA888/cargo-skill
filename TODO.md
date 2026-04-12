@@ -63,12 +63,29 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - Errors in red
 - [ ] 2.9 — `--quiet` / `-q` flag to suppress all output except errors
 
+### Provenance sidecar
+- [ ] 2.15 — `cargo skill init` writes `.skill/provenance.md`
+  - Records: `cargo-skill` version, content hashes of deployed layers, detected agents,
+    deployed paths, timestamp
+  - Gitignored alongside `.skill/context.md`
+  - `cargo skill status` reads and displays provenance if present
+
+### Workflow aliases
+- [ ] 2.16 — `cargo skill review` — activate review-focused context
+  - Equivalent to: `lookup err` + `lookup test` + `lookup lint` + Layer 2
+- [ ] 2.17 — `cargo skill refactor` — activate refactor-focused context
+  - Equivalent to: `lookup type` + `lookup api` + `lookup name` + Layer 2
+- [ ] 2.18 — `cargo skill debug` — activate debug-focused context
+  - Equivalent to: `lookup err` + `lookup mem` + Layer 2 (compiler quick-ref section only)
+
 ### Tests
 - [ ] 2.10 — Tests for shorthand prefix dispatch
 - [ ] 2.11 — Tests for `status` output correctness
 - [ ] 2.12 — Tests for `--dry-run` (no files written)
 - [ ] 2.13 — Tests for agent-specific context file writes (Cursor, Windsurf)
 - [ ] 2.14 — Tests for `clear` removes all agent context files
+- [ ] 2.19 — Tests for provenance file write (fields present, correct hash)
+- [ ] 2.20 — Tests for workflow alias layer composition
 
 ---
 
@@ -162,9 +179,9 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 ### Remote source support
 - [ ] 6.1 — Add `reqwest` (or `ureq` for lighter weight) behind `remote` feature flag
 - [ ] 6.2 — Define remote skill source format (GitHub shorthand: `owner/repo`)
-- [ ] 6.3 — `cargo skill fetch <source>` — fetch and cache remote skill assets
-  - `cargo skill fetch leonardomso/rust-skills`
-  - `cargo skill fetch actionbook/rust-skills`
+- [ ] 6.3 — `cargo skill install <source>` — fetch, verify, and cache remote skill assets
+  - `cargo skill install leonardomso/rust-skills`
+  - `cargo skill install actionbook/rust-skills`
   - Store in `~/.cargo/skill-cache/<owner>/<repo>/`
 - [ ] 6.4 — Cache invalidation: `--refresh` flag re-fetches from remote
 - [ ] 6.5 — Offline fallback: use cache if available, error clearly if not
@@ -198,6 +215,18 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [ ] 7.2 — Pin remote skill source versions in `skill.lock`
   - SHA-based locking for reproducible deployments
   - `cargo skill lock` — regenerate `skill.lock`
+  - Schema includes: source, version, content_hash (sha256), deployed_at, agent paths
+    ```toml
+    [deployed]
+    version = "0.2.2"
+    content_hash = "sha256:abc123..."
+    deployed_at = "2026-04-12T07:20:00Z"
+
+    [agents]
+    claude_code = ".claude/skills/rust.md"
+    cursor = ".cursor/rules/rust.md"
+    ```
+  - `cargo skill status` validates deployed files against `skill.lock` hashes
 
 ### Self-update awareness
 - [ ] 7.3 — On `init` or `status`, check if newer `cargo-skill` version exists on crates.io
@@ -239,6 +268,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [ ] 9.2 — Ensure all `anyhow` errors have `.context()` at every boundary
 - [ ] 9.3 — Windows path handling audit (`PathBuf` throughout, no `/` hardcoding)
 - [ ] 9.4 — CI matrix: Linux + macOS + Windows
+- [ ] 9.12 — Verify workflow alias layer compositions are stable across versions
 
 ### Documentation
 - [ ] 9.5 — Full rustdoc on all public items

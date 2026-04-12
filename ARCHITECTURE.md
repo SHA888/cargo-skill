@@ -52,6 +52,7 @@ main()
   → detect::agents()       scan for .claude/, .cursor/, .windsurf/, AGENTS.md
   → deploy::skill_files()  for each detected agent, write assets/rust/* to agent path
   → gitignore::ensure()    append .skill/ to .gitignore if not present
+  → provenance::write()    write .skill/provenance.md (version, hashes, agents, timestamp)
 ```
 
 ### Execution-time (`lookup` / `think` / `write`)
@@ -106,6 +107,21 @@ Skill content is split into three separate asset files (`layer1.md`, `layer2.md`
 the given prefix (e.g., `own`, `async`, `err`). Implemented as a simple line-range
 extraction — no parser, no AST, sections are delimited by `**<prefix>-**` markers.
 
+### Workflow aliases
+
+`cargo skill review`, `refactor`, and `debug` are intention-based aliases that compose
+specific prefix filters and layer combinations without exposing the layer model to the user.
+Each alias is a pure mapping — no new skill content, no new files. The mapping is defined
+statically in `src/workflow.rs`:
+
+| Alias      | Prefixes active           | Layers  |
+|------------|---------------------------|---------|
+| `review`   | `err`, `test`, `lint`     | 1 + 2   |
+| `refactor` | `type`, `api`, `name`     | 1 + 2   |
+| `debug`    | `err`, `mem`              | 1 + 2*  |
+
+*Layer 2 scoped to compiler quick-ref section only for `debug`.
+
 ### Agent detection
 
 Detection is filesystem-based, not config-based:
@@ -140,3 +156,6 @@ No async runtime. No HTTP client. No serde. Intentionally minimal.
 - `--dry-run` flag
 - Skill content versioning / update checks
 - Windows path handling beyond basic `PathBuf` usage
+- `skill.lock` (planned v0.7.0)
+- Workflow alias commands (planned v0.2.x)
+- Provenance sidecar beyond v0.2.x (full hash verification planned v0.7.0)

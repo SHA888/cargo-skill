@@ -33,6 +33,10 @@ cargo skill write                 Activate all layers (lookup + reasoning + exec
 cargo skill clear                 Remove .skill/context.md
 
 cargo skill status                Show repo, agents, context, and gitignore status
+
+cargo skill review                Review-focused context (err + test + lint + reasoning)
+cargo skill refactor              Refactor-focused context (type + api + name + reasoning)
+cargo skill debug                 Debug-focused context (err + mem + compiler quick-ref)
 ```
 
 ### Quick prefix shorthand
@@ -67,6 +71,9 @@ Writes `.skill/context.md` with the appropriate layer subset:
 | `lookup [prefix]`    | ✓ (filtered)     |                     |                     |
 | `think`              | ✓                | ✓                   |                     |
 | `write`              | ✓                | ✓                   | ✓                   |
+| `review`             | ✓ (`err`,`test`,`lint`) | ✓            |                     |
+| `refactor`           | ✓ (`type`,`api`,`name`) | ✓            |                     |
+| `debug`              | ✓ (`err`,`mem`)  | ✓ (quick-ref only)  |                     |
 
 The agent reads `.skill/context.md` as session context. This file is ephemeral —
 gitignored, overwritten on each invocation, deleted by `clear`.
