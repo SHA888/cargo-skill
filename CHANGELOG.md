@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2026-04-13
+
+### Added
+
+- Agent-specific context files — `cargo skill lookup/think/write` now also writes session
+  context to `.cursor/rules/skill-context.md` and `.windsurf/rules/skill-context.md` when
+  those agent directories are present. This allows Cursor and Windsurf to detect and load
+  session-specific context directly.
+- `cargo skill clear` now removes all three context files: `.skill/context.md`,
+  `.cursor/rules/skill-context.md`, and `.windsurf/rules/skill-context.md`.
+- Gitignore management now includes agent context paths: `.cursor/rules/skill-context.md`
+  and `.windsurf/rules/skill-context.md` are automatically gitignored on `init`.
+
 ## [0.2.3] - 2026-04-12
 
 ### Added

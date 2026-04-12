@@ -48,11 +48,11 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   Apply it on top of this index.
   @.skill/context.md
   ```
-- [ ] 2.6 — Update `context.rs`: for Cursor and Windsurf, write session context to agent rules dir in addition to `.skill/context.md`
+- [x] 2.6 — Update `context.rs`: for Cursor and Windsurf, write session context to agent rules dir in addition to `.skill/context.md`
   - `cargo skill lookup/think/write` → also writes `.cursor/rules/skill-context.md`
   - `cargo skill lookup/think/write` → also writes `.windsurf/rules/skill-context.md`
   - `cargo skill clear` → removes all three (`.skill/context.md`, `.cursor/rules/skill-context.md`, `.windsurf/rules/skill-context.md`)
-- [ ] 2.7 — Add agent-context paths to `.gitignore` management
+- [x] 2.7 — Add agent-context paths to `.gitignore` management
   - `.cursor/rules/skill-context.md` → gitignored
   - `.windsurf/rules/skill-context.md` → gitignored
 
