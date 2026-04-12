@@ -91,7 +91,7 @@ gitignored, overwritten on each invocation, deleted by `clear`.
 
 ---
 
-## Skill content (v0.2.2)
+## Skill content (v0.2.5)
 
 Bundled skill covers Rust only. Three layers:
 
@@ -105,6 +105,17 @@ Bundled skill covers Rust only. Three layers:
 
 Sources: `leonardomso/rust-skills` (MIT), `actionbook/rust-skills` (MIT),
 `udapy/rust-agentic-skills` (MIT).
+
+---
+
+## Latest Updates
+
+See [CHANGELOG.md](CHANGELOG.md) for the full release history. Recent highlights:
+
+- **v0.2.5** — Colored terminal output (green ✓, yellow ⚠, red ✗)
+- **v0.2.4** — Agent-specific context files for Cursor and Windsurf
+- **v0.2.3** — Claude Code context injection footer
+- **v0.2.2** — `status` command and comprehensive project overview
 
 ---
 
