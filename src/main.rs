@@ -1,6 +1,25 @@
+use anstream::println;
 use anyhow::{Context, Result};
 use cargo_skill::{context, deploy, detect, gitignore, skill};
 use clap::{Parser, Subcommand};
+
+// Color styles using ANSI escape codes
+const GREEN: &str = "\x1b[32m";
+const YELLOW: &str = "\x1b[33m";
+const RED: &str = "\x1b[31m";
+const RESET: &str = "\x1b[0m";
+
+fn success(msg: &str) -> String {
+    format!("{}✓{}{}", GREEN, RESET, msg)
+}
+
+fn warning(msg: &str) -> String {
+    format!("{}⚠{}{}", YELLOW, RESET, msg)
+}
+
+fn error_style(msg: &str) -> String {
+    format!("{}✗{}{}", RED, RESET, msg)
+}
 
 #[derive(Parser)]
 #[command(name = "cargo-skill")]
@@ -85,9 +104,12 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
     println!(
-        "✓ detected {} repo at {}",
-        format_repo_kind(&repo.kind),
-        repo.root.display()
+        "{}",
+        success(&format!(
+            " detected {} repo at {}",
+            format_repo_kind(&repo.kind),
+            repo.root.display()
+        ))
     );
 
     // Handle .gitignore
@@ -106,17 +128,20 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
         }
     } else {
         gitignore::ensure(&repo.root).context("Failed to update .gitignore")?;
-        println!("✓ ensured .skill/ is in .gitignore");
+        println!("{}", success(" ensured .skill/ is in .gitignore"));
     }
 
     // Detect agents
     let agents = detect::agents(&repo.root);
     if agents.is_empty() {
-        println!("⚠ no agents detected (create .claude/, .cursor/, .windsurf/, or AGENTS.md)");
+        println!(
+            "{}",
+            warning(" no agents detected (create .claude/, .cursor/, .windsurf/, or AGENTS.md)")
+        );
         return Ok(());
     }
     for agent in &agents {
-        println!("✓ detected agent: {:?}", agent);
+        println!("{}", success(&format!(" detected agent: {:?}", agent)));
     }
 
     // Check existing skill files for force flag
@@ -133,12 +158,18 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
             })
             .collect();
         if !existing.is_empty() {
-            println!("\n⚠ Skipping deploy — skill files already exist:");
+            println!(
+                "\n{}",
+                warning(" Skipping deploy — skill files already exist:")
+            );
             for f in &existing {
                 println!("  - {}", f);
             }
-            println!("  Use --force to overwrite");
-            println!("\nInitialization complete! (skipped deploy)");
+            println!("  {}", warning(" Use --force to overwrite"));
+            println!(
+                "\n{}",
+                success(" Initialization complete! (skipped deploy)")
+            );
             return Ok(());
         }
     }
@@ -156,10 +187,10 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
                 );
             }
         }
-        println!("\n[DRY RUN] Initialization would complete");
+        println!("\n[DRY RUN] {}", success(" Initialization would complete"));
     } else {
         deploy::deploy(&agents, &repo.root).context("Failed to deploy skill files")?;
-        println!("\nInitialization complete!");
+        println!("\n{}", success(" Initialization complete!"));
     }
     Ok(())
 }
@@ -188,7 +219,7 @@ fn cmd_lookup(prefix: Option<String>) -> Result<()> {
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
 
-    println!("✓ wrote context to .skill/context.md");
+    println!("{}", success(" wrote context to .skill/context.md"));
     Ok(())
 }
 
@@ -205,7 +236,7 @@ fn cmd_think() -> Result<()> {
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
 
-    println!("✓ wrote context to .skill/context.md");
+    println!("{}", success(" wrote context to .skill/context.md"));
     Ok(())
 }
 
@@ -222,7 +253,7 @@ fn cmd_write() -> Result<()> {
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
 
-    println!("✓ wrote context to .skill/context.md");
+    println!("{}", success(" wrote context to .skill/context.md"));
     Ok(())
 }
 
@@ -235,7 +266,7 @@ fn cmd_clear() -> Result<()> {
     // Clear context
     context::clear(&repo.root).context("Failed to clear context")?;
 
-    println!("✓ cleared .skill/context.md");
+    println!("{}", success(" cleared .skill/context.md"));
     Ok(())
 }
 
@@ -253,7 +284,11 @@ fn cmd_status() -> Result<()> {
     println!("\nAgents detected: {}", agents.len());
     for agent in &agents {
         let path = repo.root.join(agent.skill_path());
-        let deployed = if path.exists() { "✓" } else { "✗" };
+        let deployed = if path.exists() {
+            success("")
+        } else {
+            error_style("")
+        };
         println!("  {} {:?} -> {}", deployed, agent, path.display());
     }
     if agents.is_empty() {
@@ -284,9 +319,12 @@ fn cmd_status() -> Result<()> {
             .unwrap_or(false);
     println!("\nGitignore:");
     if gitignore_ok {
-        println!("  ✓ .skill/ is ignored");
+        println!("  {}", success(" .skill/ is ignored"));
     } else {
-        println!("  ✗ .skill/ is NOT in .gitignore (run `cargo skill init`)");
+        println!(
+            "  {}",
+            error_style(" .skill/ is NOT in .gitignore (run `cargo skill init`)")
+        );
     }
 
     Ok(())

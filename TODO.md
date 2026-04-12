@@ -57,7 +57,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - `.windsurf/rules/skill-context.md` → gitignored
 
 ### Output polish
-- [ ] 2.8 — Colored terminal output via `anstream` (already a transitive dep)
+- [x] 2.8 — Colored terminal output via `anstream` (already a transitive dep)
   - `✓` lines in green
   - Warnings in yellow
   - Errors in red
