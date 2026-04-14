@@ -85,6 +85,21 @@ Route every question to the correct rule prefix before answering:
 
 ---
 
+## Anti-rationalization Table
+
+Common shortcuts that lead to fragile code. Treat each as a signal to route the work to the right rule prefix.
+
+| Shortcut | Rebuttal | Violated rule prefix |
+|---|---|---|
+| "I'll add tests later" | If it's worth writing, it's worth locking in with a minimal test now; retrofitting tests after refactors is slower and misses regressions. | `test-` |
+| "This unwrap is fine here" | `unwrap()` turns a recoverable path into a crash; if it's truly an invariant, document it and use structured error handling. | `anti-` |
+| "clone() is cleaner" | Cloning is often a design smell; first ask whether the data should be borrowed/shared, then adjust ownership instead of copying. | `own-` |
+| "unsafe is faster" | `unsafe` is a liability until profiling proves a real bottleneck; optimize with measurements and safe techniques first. | `perf-`, `opt-` |
+| "I'll handle errors later" | Error paths define the API; wire them up early so callers, retries, and invariants are correct. | `err-` |
+| "This is just a prototype" | Prototypes calcify into production; apply the smallest correct pattern now to avoid permanent technical debt. | `anti-`, `lint-` |
+
+---
+
 ## Compiler Error Quick Reference
 
 ### E0106 — Missing lifetime specifier

@@ -12,6 +12,11 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - `opt-` prefix restored to compiler optimization (12 rules)
   - Full error table in layer2 (E0106 → E0716 + async Send)
   - Rule specificity aligned with `leonardomso/rust-skills` source naming
+- [x] 0.1.3 — Add anti-rationalization table to `layer2.md` (pattern from `addyosmani/agent-skills`)
+  - Table of common agent shortcuts with documented rebuttals
+  - Entries: "I'll add tests later", "This unwrap is fine here", "clone() is cleaner",
+    "unsafe is faster", "I'll handle errors later", "This is just a prototype"
+  - Each entry maps to the violated rule prefix for cross-reference
 
 ---
 
@@ -78,6 +83,15 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [ ] 2.18 — `cargo skill debug` — activate debug-focused context
   - Equivalent to: `lookup err` + `lookup mem` + Layer 2 (compiler quick-ref section only)
 
+### Claude Code slash commands (pattern from `addyosmani/agent-skills`)
+- [ ] 2.21 — Generate `.claude/commands/` entries on `cargo skill init` for Claude Code
+  - `skill-lookup.md` → `/skill-lookup` slash command
+  - `skill-think.md` → `/skill-think` slash command
+  - `skill-write.md` → `/skill-write` slash command
+  - `skill-clear.md` → `/skill-clear` slash command
+  - Each command file contains the prompt Claude Code should run when invoked
+- [ ] 2.22 — Tests for `.claude/commands/` file generation
+
 ### Tests
 - [ ] 2.10 — Tests for shorthand prefix dispatch
 - [ ] 2.11 — Tests for `status` output correctness
@@ -101,6 +115,16 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [ ] 3.3 — Author `assets/python/layer3.md`
   - RPI loop for Python: uv run, ruff check, mypy, pytest
   - Verification checklist: `uv run ruff check`, `uv run mypy`, `uv run pytest`
+
+### Agent personas (pattern from `addyosmani/agent-skills`)
+- [ ] 3.11 — Author `assets/agents/rust-reviewer.md`
+  - Senior Rust code reviewer persona with five-axis review (correctness, safety, perf, API, docs)
+  - Maps to `anti-` + `lint-` prefix rules
+- [ ] 3.12 — Author `assets/agents/rust-architect.md`
+  - Systems architect persona for API and module design decisions
+  - Maps to `api-` + `proj-` + `type-` prefix rules
+- [ ] 3.13 — `cargo skill init` deploys agent personas to `.claude/skills/agents/`
+- [ ] 3.14 — Tests for agent persona deployment
 
 ### Stack detection
 - [ ] 3.4 — Detect Python projects via `pyproject.toml` presence
@@ -166,6 +190,20 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [ ] 5.3 — Merge config with defaults (config wins over auto-detection)
 - [ ] 5.4 — `cargo skill config init` — scaffold a `skill.toml` with commented defaults
 - [ ] 5.5 — `cargo skill config show` — print resolved config (file + defaults merged)
+
+### SDLC-phase skill overlays (pattern from `addyosmani/agent-skills`)
+- [ ] 5.9 — Author `assets/sdlc/` phase overlays as optional context supplements
+  - `spec.md` — spec-driven development workflow (Define phase)
+  - `plan.md` — task decomposition and acceptance criteria (Plan phase)
+  - `review.md` — multi-axis code review gates (Review phase)
+  - `ship.md` — pre-launch checklist and rollback procedures (Ship phase)
+- [ ] 5.10 — `cargo skill sdlc <phase>` — activate SDLC overlay on top of active language context
+  - `cargo skill sdlc spec` → write spec overlay to `.skill/context.md`
+  - `cargo skill sdlc review` → write review overlay to `.skill/context.md`
+- [ ] 5.11 — Session hooks: `cargo skill init` generates `.claude/hooks/` stubs for Claude Code
+  - Pre-session hook: load active skill context
+  - Post-session hook: clear ephemeral context
+- [ ] 5.12 — Tests for SDLC overlay composition and hook file generation
 
 ### Tests
 - [ ] 5.6 — Config file parsing tests
