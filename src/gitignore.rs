@@ -9,6 +9,8 @@ const SKILL_GITIGNORE_ENTRY: &str = ".skill/";
 const CURSOR_CONTEXT_GITIGNORE_ENTRY: &str = ".cursor/rules/skill-context.md";
 #[allow(dead_code)]
 const WINDSURF_CONTEXT_GITIGNORE_ENTRY: &str = ".windsurf/rules/skill-context.md";
+#[allow(dead_code)]
+const PROVENANCE_GITIGNORE_ENTRY: &str = ".skill/provenance.md";
 
 /// Ensure skill-related paths are in `.gitignore`
 ///

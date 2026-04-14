@@ -23,7 +23,6 @@ pub fn deploy(agents: &[Agent], repo_root: &Path) -> Result<()> {
             Agent::AgentsMd => deploy_to_agents_md(repo_root, skill_content)?,
             _ => deploy_to_file(agent, repo_root, skill_content)?,
         }
-        println!("✓ deployed to {}", agent.skill_path().display());
     }
 
     Ok(())

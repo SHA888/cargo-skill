@@ -1,6 +1,6 @@
 use anstream::println;
 use anyhow::{Context, Result};
-use cargo_skill::{context, deploy, detect, gitignore, skill};
+use cargo_skill::{context, deploy, detect, gitignore, provenance, skill};
 use clap::{Parser, Subcommand};
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -213,6 +213,19 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
         ));
     } else {
         deploy::deploy(&agents, &repo.root).context("Failed to deploy skill files")?;
+        for agent in &agents {
+            info(&success(&format!(
+                " deployed to {}",
+                agent.skill_path().display()
+            )));
+        }
+
+        // Write provenance record
+        let skill_content = include_str!("../assets/rust/layer1.md");
+        provenance::write(&repo.root, &agents, skill_content)
+            .context("Failed to write provenance")?;
+        info(&success(" wrote .skill/provenance.md"));
+
         info(&format!("\n{}", success(" Initialization complete!")));
     }
     Ok(())
@@ -350,7 +363,46 @@ fn cmd_status() -> Result<()> {
         ));
     }
 
+    // Check provenance
+    if let Some(prov) = provenance::read(&repo.root)? {
+        info("\nProvenance:");
+        if !prov.version.is_empty() {
+            info(&format!("  Version: cargo-skill v{}", prov.version));
+        }
+        if !prov.content_hash.is_empty() {
+            info(&format!("  Content Hash: {}...", &prov.content_hash[..16]));
+        }
+        if prov.timestamp > 0 {
+            let dt = format_timestamp_rfc3339(prov.timestamp);
+            info(&format!("  Deployed: {}", dt));
+        }
+    }
+
     Ok(())
+}
+
+/// Format Unix timestamp as RFC 3339 date-time
+fn format_timestamp_rfc3339(unix_secs: u64) -> String {
+    const SECS_PER_MINUTE: u64 = 60;
+    const SECS_PER_HOUR: u64 = 3600;
+    const SECS_PER_DAY: u64 = 86400;
+
+    let days_since_epoch = unix_secs / SECS_PER_DAY;
+    let secs_of_day = unix_secs % SECS_PER_DAY;
+
+    let hour = secs_of_day / SECS_PER_HOUR;
+    let min = (secs_of_day % SECS_PER_HOUR) / SECS_PER_MINUTE;
+    let sec = secs_of_day % SECS_PER_MINUTE;
+
+    let year = 1970 + (days_since_epoch / 365) as u32;
+    let day_of_year = days_since_epoch % 365;
+    let month = (day_of_year / 30 + 1).min(12) as u32;
+    let day = (day_of_year % 30 + 1).min(31) as u32;
+
+    format!(
+        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z",
+        year, month, day, hour, min, sec
+    )
 }
 
 /// Detect the context mode by analyzing context.md content

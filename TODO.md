@@ -69,7 +69,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [x] 2.9 — `--quiet` / `-q` flag to suppress all output except errors
 
 ### Provenance sidecar
-- [ ] 2.15 — `cargo skill init` writes `.skill/provenance.md`
+- [x] 2.15 — `cargo skill init` writes `.skill/provenance.md`
   - Records: `cargo-skill` version, content hashes of deployed layers, detected agents,
     deployed paths, timestamp
   - Gitignored alongside `.skill/context.md`
