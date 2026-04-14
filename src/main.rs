@@ -2,6 +2,32 @@ use anstream::println;
 use anyhow::{Context, Result};
 use cargo_skill::{context, deploy, detect, gitignore, skill};
 use clap::{Parser, Subcommand};
+use std::sync::atomic::{AtomicBool, Ordering};
+
+// Global quiet flag — when set, suppress all non-error output
+static QUIET: AtomicBool = AtomicBool::new(false);
+
+/// Set the global quiet flag
+fn set_quiet(quiet: bool) {
+    QUIET.store(quiet, Ordering::SeqCst);
+}
+
+/// Print info message only if not in quiet mode
+fn info(msg: &str) {
+    if !QUIET.load(Ordering::SeqCst) {
+        println!("{}", msg);
+    }
+}
+
+/// Print info with format args (convenience wrapper)
+#[allow(unused_macros)]
+macro_rules! infof {
+    ($($arg:tt)*) => {
+        if !$crate::QUIET.load(::std::sync::atomic::Ordering::SeqCst) {
+            ::anstream::println!($($arg)*);
+        }
+    };
+}
 
 // Color styles using ANSI escape codes
 const GREEN: &str = "\x1b[32m";
@@ -25,6 +51,9 @@ fn error_style(msg: &str) -> String {
 #[command(name = "cargo-skill")]
 #[command(version, about = "Deploy and activate layered AI agent skills")]
 struct Cli {
+    /// Suppress all output except errors
+    #[arg(short = 'q', long, global = true)]
+    quiet: bool,
     #[command(subcommand)]
     command: Commands,
 }
@@ -66,6 +95,7 @@ fn main() -> Result<()> {
         args.remove(1);
     }
     let cli = Cli::parse_from(args);
+    set_quiet(cli.quiet);
 
     match cli.command {
         Commands::Init { dry_run, force } => cmd_init(dry_run, force),
@@ -96,21 +126,18 @@ fn main() -> Result<()> {
 
 fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
     if dry_run {
-        println!("[DRY RUN] Would initialize cargo-skill...");
+        info("[DRY RUN] Would initialize cargo-skill...");
     } else {
-        println!("Initializing cargo-skill...");
+        info("Initializing cargo-skill...");
     }
 
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
-    println!(
-        "{}",
-        success(&format!(
-            " detected {} repo at {}",
-            format_repo_kind(&repo.kind),
-            repo.root.display()
-        ))
-    );
+    info(&success(&format!(
+        " detected {} repo at {}",
+        format_repo_kind(&repo.kind),
+        repo.root.display()
+    )));
 
     // Handle .gitignore
     let gitignore_path = repo.root.join(".gitignore");
@@ -122,26 +149,25 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
 
     if dry_run {
         if needs_gitignore {
-            println!("[DRY RUN] Would add .skill/ to .gitignore");
+            info("[DRY RUN] Would add .skill/ to .gitignore");
         } else {
-            println!("[DRY RUN] .skill/ already in .gitignore (no change)");
+            info("[DRY RUN] .skill/ already in .gitignore (no change)");
         }
     } else {
         gitignore::ensure(&repo.root).context("Failed to update .gitignore")?;
-        println!("{}", success(" ensured .skill/ is in .gitignore"));
+        info(&success(" ensured .skill/ is in .gitignore"));
     }
 
     // Detect agents
     let agents = detect::agents(&repo.root);
     if agents.is_empty() {
-        println!(
-            "{}",
-            warning(" no agents detected (create .claude/, .cursor/, .windsurf/, or AGENTS.md)")
-        );
+        info(&warning(
+            " no agents detected (create .claude/, .cursor/, .windsurf/, or AGENTS.md)",
+        ));
         return Ok(());
     }
     for agent in &agents {
-        println!("{}", success(&format!(" detected agent: {:?}", agent)));
+        info(&success(&format!(" detected agent: {:?}", agent)));
     }
 
     // Check existing skill files for force flag
@@ -158,18 +184,12 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
             })
             .collect();
         if !existing.is_empty() {
-            println!(
-                "\n{}",
-                warning(" Skipping deploy — skill files already exist:")
-            );
+            info(&warning(" Skipping deploy — skill files already exist:"));
             for f in &existing {
-                println!("  - {}", f);
+                info(&format!("  - {}", f));
             }
-            println!("  {}", warning(" Use --force to overwrite"));
-            println!(
-                "\n{}",
-                success(" Initialization complete! (skipped deploy)")
-            );
+            info(&warning(" Use --force to overwrite"));
+            info(&success(" Initialization complete! (skipped deploy)"));
             return Ok(());
         }
     }
@@ -179,18 +199,18 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
         for agent in &agents {
             let path = repo.root.join(agent.skill_path());
             if force || !path.exists() {
-                println!("[DRY RUN] Would deploy to {}", path.display());
+                info(&format!("[DRY RUN] Would deploy to {}", path.display()));
             } else {
-                println!(
+                info(&format!(
                     "[DRY RUN] Skill file already exists at {} (use --force to overwrite)",
                     path.display()
-                );
+                ));
             }
         }
-        println!("\n[DRY RUN] {}", success(" Initialization would complete"));
+        info(&format!("\n[DRY RUN] {}", success(" Initialization would complete")));
     } else {
         deploy::deploy(&agents, &repo.root).context("Failed to deploy skill files")?;
-        println!("\n{}", success(" Initialization complete!"));
+        info(&format!("\n{}", success(" Initialization complete!")));
     }
     Ok(())
 }
@@ -204,9 +224,9 @@ fn format_repo_kind(kind: &detect::RepoKind) -> &'static str {
 
 fn cmd_lookup(prefix: Option<String>) -> Result<()> {
     if let Some(ref p) = prefix {
-        println!("Activating Layer 1 with prefix: {}", p);
+        info(&format!("Activating Layer 1 with prefix: {}", p));
     } else {
-        println!("Activating Layer 1 (full lookup)");
+        info("Activating Layer 1 (full lookup)");
     }
 
     // Detect repository
@@ -219,12 +239,12 @@ fn cmd_lookup(prefix: Option<String>) -> Result<()> {
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
 
-    println!("{}", success(" wrote context to .skill/context.md"));
+    info(&success(" wrote context to .skill/context.md"));
     Ok(())
 }
 
 fn cmd_think() -> Result<()> {
-    println!("Activating Layer 1 + 2 (lookup + reasoning)");
+    info("Activating Layer 1 + 2 (lookup + reasoning)");
 
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
@@ -236,12 +256,12 @@ fn cmd_think() -> Result<()> {
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
 
-    println!("{}", success(" wrote context to .skill/context.md"));
+    info(&success(" wrote context to .skill/context.md"));
     Ok(())
 }
 
 fn cmd_write() -> Result<()> {
-    println!("Activating all layers (lookup + reasoning + execution)");
+    info("Activating all layers (lookup + reasoning + execution)");
 
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
@@ -253,12 +273,12 @@ fn cmd_write() -> Result<()> {
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
 
-    println!("{}", success(" wrote context to .skill/context.md"));
+    info(&success(" wrote context to .skill/context.md"));
     Ok(())
 }
 
 fn cmd_clear() -> Result<()> {
-    println!("Clearing skill context...");
+    info("Clearing skill context...");
 
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
@@ -266,22 +286,22 @@ fn cmd_clear() -> Result<()> {
     // Clear context
     context::clear(&repo.root).context("Failed to clear context")?;
 
-    println!("{}", success(" cleared .skill/context.md"));
+    info(&success(" cleared .skill/context.md"));
     Ok(())
 }
 
 fn cmd_status() -> Result<()> {
-    println!("cargo-skill status\n");
+    info("cargo-skill status\n");
 
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
-    println!("Repository:");
-    println!("  Kind: {}", format_repo_kind(&repo.kind));
-    println!("  Root: {}", repo.root.display());
+    info("Repository:");
+    info(&format!("  Kind: {}", format_repo_kind(&repo.kind)));
+    info(&format!("  Root: {}", repo.root.display()));
 
     // Detect agents
     let agents = detect::agents(&repo.root);
-    println!("\nAgents detected: {}", agents.len());
+    info(&format!("\nAgents detected: {}", agents.len()));
     for agent in &agents {
         let path = repo.root.join(agent.skill_path());
         let deployed = if path.exists() {
@@ -289,26 +309,26 @@ fn cmd_status() -> Result<()> {
         } else {
             error_style("")
         };
-        println!("  {} {:?} -> {}", deployed, agent, path.display());
+        info(&format!("  {} {:?} -> {}", deployed, agent, path.display()));
     }
     if agents.is_empty() {
-        println!("  (none — create .claude/, .cursor/, .windsurf/, or AGENTS.md)");
+        info("  (none — create .claude/, .cursor/, .windsurf/, or AGENTS.md)");
     }
 
     // Check context.md
     let context_path = repo.root.join(".skill/context.md");
-    println!("\nContext:");
+    info("\nContext:");
     if context_path.exists() {
         let content =
             std::fs::read_to_string(&context_path).context("Failed to read context.md")?;
         let lines = content.lines().count();
         let (mode, prefix) = detect_context_mode(&content);
-        println!("  Status: active ({}, {} lines)", mode, lines);
+        info(&format!("  Status: active ({}, {} lines)", mode, lines));
         if let Some(p) = prefix {
-            println!("  Prefix: {}", p);
+            info(&format!("  Prefix: {}", p));
         }
     } else {
-        println!("  Status: none (run `cargo skill lookup|think|write` to activate)");
+        info("  Status: none (run `cargo skill lookup|think|write` to activate)");
     }
 
     // Check .gitignore
@@ -317,14 +337,14 @@ fn cmd_status() -> Result<()> {
         && std::fs::read_to_string(&gitignore_path)
             .map(|s| s.contains(".skill/"))
             .unwrap_or(false);
-    println!("\nGitignore:");
+    info("\nGitignore:");
     if gitignore_ok {
-        println!("  {}", success(" .skill/ is ignored"));
+        info(&format!("  {}", success(" .skill/ is ignored")));
     } else {
-        println!(
+        info(&format!(
             "  {}",
             error_style(" .skill/ is NOT in .gitignore (run `cargo skill init`)")
-        );
+        ));
     }
 
     Ok(())

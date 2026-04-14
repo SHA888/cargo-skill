@@ -66,7 +66,7 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - `✓` lines in green
   - Warnings in yellow
   - Errors in red
-- [ ] 2.9 — `--quiet` / `-q` flag to suppress all output except errors
+- [x] 2.9 — `--quiet` / `-q` flag to suppress all output except errors
 
 ### Provenance sidecar
 - [ ] 2.15 — `cargo skill init` writes `.skill/provenance.md`
