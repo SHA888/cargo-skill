@@ -16,3 +16,5 @@ Thumbs.db
 
 # cargo-skill ephemeral context
 .skill/
+.cursor/rules/skill-context.md
+.windsurf/rules/skill-context.md
