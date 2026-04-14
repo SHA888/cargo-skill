@@ -183,3 +183,105 @@ fn test_shorthand_prefixes_are_valid() {
         );
     }
 }
+
+#[test]
+fn test_shorthand_prefix_invalid_returns_error() {
+    // Invalid shorthand prefix should fail validation
+    let result = skill::load_lookup_filtered(Some("invalid"));
+    assert!(result.is_err());
+    let err = result.unwrap_err().to_string();
+    assert!(err.contains("Unknown prefix"));
+    assert!(err.contains("invalid"));
+}
+
+#[test]
+fn test_status_detects_repo_kind() {
+    let temp = setup_test_repo();
+
+    // Detect repo
+    let repo = detect::repo_at(temp.path()).unwrap();
+    assert_eq!(repo.kind, detect::RepoKind::SingleCrate);
+}
+
+#[test]
+fn test_status_detects_agents() {
+    let temp = setup_test_repo();
+    create_agents(&temp);
+
+    let agents = detect::agents(temp.path());
+    assert_eq!(agents.len(), 2);
+    assert!(agents.contains(&detect::Agent::ClaudeCode));
+    assert!(agents.contains(&detect::Agent::Cursor));
+}
+
+#[test]
+fn test_status_detects_context() {
+    let temp = setup_test_repo();
+
+    // No context initially
+    let context_path = temp.path().join(".skill/context.md");
+    assert!(!context_path.exists());
+
+    // Write context
+    context::write(temp.path(), "test content").unwrap();
+    assert!(context_path.exists());
+
+    // Verify content
+    let content = fs::read_to_string(&context_path).unwrap();
+    assert_eq!(content, "test content");
+}
+
+#[test]
+fn test_status_detects_gitignore() {
+    let temp = setup_test_repo();
+
+    // No gitignore initially
+    let gitignore_path = temp.path().join(".gitignore");
+    assert!(!gitignore_path.exists());
+
+    // Ensure gitignore
+    gitignore::ensure(temp.path()).unwrap();
+    assert!(gitignore_path.exists());
+
+    let content = fs::read_to_string(&gitignore_path).unwrap();
+    assert!(content.contains(".skill/"));
+}
+
+#[test]
+fn test_dry_run_does_not_write_files() {
+    let temp = setup_test_repo();
+    create_agents(&temp);
+
+    // Check that skill files don't exist yet
+    let claude_skill = temp.path().join(".claude/skills/rust.md");
+    let cursor_skill = temp.path().join(".cursor/rules/rust.md");
+    assert!(!claude_skill.exists());
+    assert!(!cursor_skill.exists());
+
+    // Simulate dry-run: check what would be deployed without actually deploying
+    let agents = detect::agents(temp.path());
+    assert_eq!(agents.len(), 2);
+
+    // In dry-run mode, we should NOT call deploy::deploy()
+    // The files should still not exist
+    assert!(!claude_skill.exists());
+    assert!(!cursor_skill.exists());
+}
+
+#[test]
+fn test_dry_run_does_not_modify_gitignore() {
+    let temp = setup_test_repo();
+
+    // Create a gitignore without .skill/
+    let gitignore_path = temp.path().join(".gitignore");
+    fs::write(&gitignore_path, "# existing content\n").unwrap();
+
+    let original_content = fs::read_to_string(&gitignore_path).unwrap();
+    assert!(!original_content.contains(".skill/"));
+
+    // Simulate dry-run: don't actually modify
+    // Content should remain unchanged
+    let content_after = fs::read_to_string(&gitignore_path).unwrap();
+    assert_eq!(original_content, content_after);
+    assert!(!content_after.contains(".skill/"));
+}

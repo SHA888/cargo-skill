@@ -43,7 +43,12 @@ impl Agent {
 /// Walk up from current directory to find Cargo.toml
 pub fn repo() -> Result<Repo> {
     let cwd = env::current_dir().context("Failed to get current directory")?;
-    let mut path = cwd.as_path();
+    repo_at(cwd.as_path())
+}
+
+/// Detect repo at a specific path (for testing)
+pub fn repo_at(start_path: &Path) -> Result<Repo> {
+    let mut path = start_path;
 
     loop {
         let cargo_toml = path.join("Cargo.toml");

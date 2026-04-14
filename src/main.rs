@@ -207,7 +207,10 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
                 ));
             }
         }
-        info(&format!("\n[DRY RUN] {}", success(" Initialization would complete")));
+        info(&format!(
+            "\n[DRY RUN] {}",
+            success(" Initialization would complete")
+        ));
     } else {
         deploy::deploy(&agents, &repo.root).context("Failed to deploy skill files")?;
         info(&format!("\n{}", success(" Initialization complete!")));

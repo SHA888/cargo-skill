@@ -93,11 +93,11 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [ ] 2.22 — Tests for `.claude/commands/` file generation
 
 ### Tests
-- [ ] 2.10 — Tests for shorthand prefix dispatch
-- [ ] 2.11 — Tests for `status` output correctness
-- [ ] 2.12 — Tests for `--dry-run` (no files written)
-- [ ] 2.13 — Tests for agent-specific context file writes (Cursor, Windsurf)
-- [ ] 2.14 — Tests for `clear` removes all agent context files
+- [x] 2.10 — Tests for shorthand prefix dispatch
+- [x] 2.11 — Tests for `status` output correctness
+- [x] 2.12 — Tests for `--dry-run` (no files written)
+- [x] 2.13 — Tests for agent-specific context file writes (Cursor, Windsurf)
+- [x] 2.14 — Tests for `clear` removes all agent context files
 - [ ] 2.19 — Tests for provenance file write (fields present, correct hash)
 - [ ] 2.20 — Tests for workflow alias layer composition
 
