@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2026-04-14
+
+### Added
+
+- **Provenance sidecar** — `cargo skill init` now writes `.skill/provenance.md` with deployment
+  metadata including:
+  - cargo-skill version
+  - SHA256 content hash of deployed layers
+  - List of detected agents
+  - Deployed skill file paths
+  - RFC 3339 timestamp with Unix epoch fallback
+- `cargo skill status` now reads and displays provenance information when present
+  - Shows version, content hash (first 16 chars), and deployment timestamp
+- Added `--quiet` / `-q` global flag to suppress all non-error output
+- Gitignore now covers `.skill/provenance.md` via the existing `.skill/` entry
+
+### Fixed
+
+- `println!` in library code (`deploy.rs`) now properly routed through `info()` wrapper
+  respecting the `--quiet` flag
+
 ## [0.2.5] - 2026-04-13
 
 ### Added
@@ -85,4 +106,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Gitignore management — automatically adds `.skill/` to `.gitignore`
 - Comprehensive test suite: 51 tests (42 unit + 9 integration)
 
+[0.2.6]: https://github.com/SHA888/cargo-skill/releases/tag/v0.2.6
+[0.2.5]: https://github.com/SHA888/cargo-skill/releases/tag/v0.2.5
+[0.2.4]: https://github.com/SHA888/cargo-skill/releases/tag/v0.2.4
+[0.2.3]: https://github.com/SHA888/cargo-skill/releases/tag/v0.2.3
+[0.2.2]: https://github.com/SHA888/cargo-skill/releases/tag/v0.2.2
+[0.2.1]: https://github.com/SHA888/cargo-skill/releases/tag/v0.2.1
+[0.2.0]: https://github.com/SHA888/cargo-skill/releases/tag/v0.2.0
+[0.1.1]: https://github.com/SHA888/cargo-skill/releases/tag/v0.1.1
 [0.1.0]: https://github.com/SHA888/cargo-skill/releases/tag/v0.1.0
