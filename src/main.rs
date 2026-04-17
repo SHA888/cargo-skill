@@ -82,6 +82,12 @@ enum Commands {
     Clear,
     /// Show repo status, agents, and active context
     Status,
+    /// Activate review-focused context (err, test, lint + Layer 2)
+    Review,
+    /// Activate refactor-focused context (type, api, name + Layer 2)
+    Refactor,
+    /// Activate debug-focused context (err, mem + Layer 2 quick-ref)
+    Debug,
     /// Catch unrecognized subcommands for prefix shorthand
     #[command(external_subcommand)]
     External(Vec<String>),
@@ -104,6 +110,9 @@ fn main() -> Result<()> {
         Commands::Write => cmd_write(),
         Commands::Clear => cmd_clear(),
         Commands::Status => cmd_status(),
+        Commands::Review => cmd_review(),
+        Commands::Refactor => cmd_refactor(),
+        Commands::Debug => cmd_debug(),
         Commands::External(args) => {
             // Shorthand: cargo skill <prefix> → cargo skill lookup <prefix>
             if let Some(first) = args.first() {
@@ -112,7 +121,7 @@ fn main() -> Result<()> {
                     cmd_lookup(Some(cmd.to_string()))
                 } else {
                     anyhow::bail!(
-                        "Unknown command: '{}'.\nValid commands: init, lookup, think, write, clear\nValid prefixes for shorthand: {}",
+                        "Unknown command: '{}'.\nValid commands: init, lookup, think, write, clear, status, review, refactor, debug\nValid prefixes for shorthand: {}",
                         cmd,
                         skill::prefix::VALID_PREFIXES.join(", ")
                     )
@@ -306,6 +315,51 @@ fn cmd_clear() -> Result<()> {
     Ok(())
 }
 
+fn cmd_review() -> Result<()> {
+    cmd_workflow(&["err", "test", "lint"], "review")
+}
+
+fn cmd_refactor() -> Result<()> {
+    cmd_workflow(&["type", "api", "name"], "refactor")
+}
+
+fn cmd_debug() -> Result<()> {
+    info("Activating debug workflow...");
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+
+    // Load Layer 1 content filtered by err and mem prefixes
+    let mut content = String::new();
+
+    // Add filtered Layer 1 content for err prefix
+    let err_content =
+        skill::load_lookup_filtered(Some("err")).context("Failed to load err content")?;
+    content.push_str(&err_content);
+
+    // Add filtered Layer 1 content for mem prefix
+    content.push_str("\n\n---\n\n");
+    let mem_content =
+        skill::load_lookup_filtered(Some("mem")).context("Failed to load mem content")?;
+    content.push_str(&mem_content);
+
+    // Add only the Compiler Error Quick Reference section from Layer 2
+    let layer2_content = include_str!("../assets/rust/layer2.md");
+    let start = layer2_content
+        .find("## Compiler Error Quick Reference")
+        .context("Layer 2 is missing '## Compiler Error Quick Reference' section")?;
+    content.push_str("\n\n---\n\n");
+    content.push_str(&layer2_content[start..]);
+
+    // Write to context
+    context::write(&repo.root, &content).context("Failed to write context")?;
+
+    info(&success(
+        " wrote debug workflow context to .skill/context.md",
+    ));
+    Ok(())
+}
+
 fn cmd_status() -> Result<()> {
     info("cargo-skill status\n");
 
@@ -405,16 +459,87 @@ fn format_timestamp_rfc3339(unix_secs: u64) -> String {
     )
 }
 
+/// Combine multiple prefixes from Layer 1 with Layer 2
+fn cmd_workflow(prefixes: &[&str], name: &str) -> Result<()> {
+    info(&format!("Activating {} workflow...", name));
+
+    // Detect repository
+    let repo = detect::repo().context("Failed to detect repository")?;
+
+    // Load Layer 1 content filtered by multiple prefixes
+    let mut content = String::new();
+
+    // Add filtered Layer 1 content for each prefix
+    for prefix in prefixes {
+        let prefix_content =
+            skill::load_lookup_filtered(Some(prefix)).context("Failed to load skill content")?;
+
+        if !content.is_empty() {
+            content.push_str("\n\n---\n\n");
+        }
+        content.push_str(&prefix_content);
+    }
+
+    // Add Layer 2 (reasoning)
+    let layer2_content = include_str!("../assets/rust/layer2.md");
+    content.push_str("\n\n---\n\n");
+    content.push_str(layer2_content);
+
+    // Write to context
+    context::write(&repo.root, &content).context("Failed to write context")?;
+
+    info(&success(&format!(
+        " wrote {} workflow context to .skill/context.md",
+        name
+    )));
+    Ok(())
+}
+
 /// Detect the context mode by analyzing context.md content
 fn detect_context_mode(content: &str) -> (&'static str, Option<&str>) {
-    let first_line = content.lines().next().unwrap_or("");
+    // Check for workflow contexts (multiple prefixes + Layer 2) FIRST
+    let prefixes: Vec<&str> = content
+        .lines()
+        .filter(|l| l.contains("Filtered for prefix:"))
+        .collect();
 
-    // Check for prefix filter
+    if !prefixes.is_empty() {
+        // Extract all prefixes
+        let prefix_list: Vec<&str> = prefixes
+            .iter()
+            .filter_map(|l| l.split("**").nth(1))
+            .map(|s| s.trim_end_matches('-'))
+            .collect();
+
+        // Determine workflow type based on prefixes
+        let has_err = prefix_list.contains(&"err");
+        let has_test = prefix_list.contains(&"test");
+        let has_lint = prefix_list.contains(&"lint");
+        let has_type = prefix_list.contains(&"type");
+        let has_api = prefix_list.contains(&"api");
+        let has_name = prefix_list.contains(&"name");
+        let has_mem = prefix_list.contains(&"mem");
+
+        if has_err && has_test && has_lint {
+            return ("review", None);
+        } else if has_type && has_api && has_name {
+            return ("refactor", None);
+        } else if has_err && has_mem {
+            return ("debug", None);
+        }
+
+        // Fallback to first prefix if workflow not recognized
+        return ("lookup", prefix_list.first().copied());
+    }
+
+    // Check for single prefix filter
     let prefix = content
         .lines()
         .find(|l| l.contains("Filtered for prefix:"))
         .and_then(|l| l.split("**").nth(1))
         .map(|s| s.trim_end_matches('-'));
+
+    let first_line = content.lines().next().unwrap_or("");
 
     if first_line.contains("Layer 3") || content.contains("Layer 3") {
         ("write", prefix)

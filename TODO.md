@@ -76,11 +76,11 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - `cargo skill status` reads and displays provenance if present
 
 ### Workflow aliases
-- [ ] 2.16 — `cargo skill review` — activate review-focused context
+- [x] 2.16 — `cargo skill review` — activate review-focused context
   - Equivalent to: `lookup err` + `lookup test` + `lookup lint` + Layer 2
-- [ ] 2.17 — `cargo skill refactor` — activate refactor-focused context
+- [x] 2.17 — `cargo skill refactor` — activate refactor-focused context
   - Equivalent to: `lookup type` + `lookup api` + `lookup name` + Layer 2
-- [ ] 2.18 — `cargo skill debug` — activate debug-focused context
+- [x] 2.18 — `cargo skill debug` — activate debug-focused context
   - Equivalent to: `lookup err` + `lookup mem` + Layer 2 (compiler quick-ref section only)
 
 ### Claude Code slash commands (pattern from `addyosmani/agent-skills`)
