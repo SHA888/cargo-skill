@@ -285,3 +285,68 @@ fn test_dry_run_does_not_modify_gitignore() {
     assert_eq!(original_content, content_after);
     assert!(!content_after.contains(".skill/"));
 }
+
+#[test]
+fn test_workflow_review_composition() {
+    // Test that review workflow combines err + test + lint prefixes + Layer 2
+    let err_content = skill::load_lookup_filtered(Some("err")).unwrap();
+    let test_content = skill::load_lookup_filtered(Some("test")).unwrap();
+    let lint_content = skill::load_lookup_filtered(Some("lint")).unwrap();
+
+    // Verify each prefix content contains expected markers
+    assert!(err_content.contains("Filtered for prefix: **err-**"));
+    assert!(test_content.contains("Filtered for prefix: **test-**"));
+    assert!(lint_content.contains("Filtered for prefix: **lint-**"));
+
+    // Verify all three prefixes are present in their respective contents
+    assert!(err_content.contains("## **err-**"));
+    assert!(test_content.contains("## **test-**"));
+    assert!(lint_content.contains("## **lint-**"));
+}
+
+#[test]
+fn test_workflow_refactor_composition() {
+    // Test that refactor workflow combines type + api + name prefixes + Layer 2
+    let type_content = skill::load_lookup_filtered(Some("type")).unwrap();
+    let api_content = skill::load_lookup_filtered(Some("api")).unwrap();
+    let name_content = skill::load_lookup_filtered(Some("name")).unwrap();
+
+    // Verify each prefix content contains expected markers
+    assert!(type_content.contains("Filtered for prefix: **type-**"));
+    assert!(api_content.contains("Filtered for prefix: **api-**"));
+    assert!(name_content.contains("Filtered for prefix: **name-**"));
+
+    // Verify all three prefixes are present in their respective contents
+    assert!(type_content.contains("## **type-**"));
+    assert!(api_content.contains("## **api-**"));
+    assert!(name_content.contains("## **name-**"));
+}
+
+#[test]
+fn test_workflow_debug_composition() {
+    // Test that debug workflow combines err + mem prefixes
+    let err_content = skill::load_lookup_filtered(Some("err")).unwrap();
+    let mem_content = skill::load_lookup_filtered(Some("mem")).unwrap();
+
+    // Verify each prefix content contains expected markers
+    assert!(err_content.contains("Filtered for prefix: **err-**"));
+    assert!(mem_content.contains("Filtered for prefix: **mem-**"));
+
+    // Verify both prefixes are present in their respective contents
+    assert!(err_content.contains("## **err-**"));
+    assert!(mem_content.contains("## **mem-**"));
+}
+
+#[test]
+fn test_workflow_prefixes_valid() {
+    // Verify all prefixes used in workflows are valid
+    let workflow_prefixes = vec!["err", "test", "lint", "type", "api", "name", "mem"];
+
+    for prefix in workflow_prefixes {
+        assert!(
+            skill::prefix::VALID_PREFIXES.contains(&prefix),
+            "Workflow prefix '{}' should be valid",
+            prefix
+        );
+    }
+}

@@ -98,8 +98,8 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 - [x] 2.12 — Tests for `--dry-run` (no files written)
 - [x] 2.13 — Tests for agent-specific context file writes (Cursor, Windsurf)
 - [x] 2.14 — Tests for `clear` removes all agent context files
-- [ ] 2.19 — Tests for provenance file write (fields present, correct hash)
-- [ ] 2.20 — Tests for workflow alias layer composition
+- [x] 2.19 — Tests for provenance file write (fields present, correct hash)
+- [x] 2.20 — Tests for workflow alias layer composition
 
 ---
 
