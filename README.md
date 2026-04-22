@@ -82,16 +82,17 @@ gitignored, overwritten on each invocation, deleted by `clear`.
 
 ## Agent support
 
-| Agent       | Install path                  |
-|-------------|-------------------------------|
-| Claude Code | `.claude/skills/rust.md`      |
-| Cursor      | `.cursor/rules/rust.md`       |
-| Windsurf    | `.windsurf/rules/rust.md`     |
-| AGENTS.md   | `AGENTS.md` (appended)        |
+| Agent       | Install path                       |
+|-------------|------------------------------------|
+| Claude Code | `.claude/skills/rust.md`           |
+|             | `.claude/commands/*.md` (slash)    |
+| Cursor      | `.cursor/rules/rust.md`            |
+| Windsurf    | `.windsurf/rules/rust.md`          |
+| AGENTS.md   | `AGENTS.md` (appended)             |
 
 ---
 
-## Skill content (v0.2.5)
+## Skill content (v0.2.7)
 
 Bundled skill covers Rust only. Three layers:
 
@@ -112,10 +113,13 @@ Sources: `leonardomso/rust-skills` (MIT), `actionbook/rust-skills` (MIT),
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release history. Recent highlights:
 
+- **v0.2.7** — Workflow aliases (`review`, `refactor`, `debug`) and Claude Code slash commands
+- **v0.2.6** — Provenance sidecar (`--quiet` flag, deployment metadata)
 - **v0.2.5** — Colored terminal output (green ✓, yellow ⚠, red ✗)
 - **v0.2.4** — Agent-specific context files for Cursor and Windsurf
 - **v0.2.3** — Claude Code context injection footer
 - **v0.2.2** — `status` command and comprehensive project overview
+- **v0.2.1** — `--dry-run` and `--force` flags for `init`
 
 ---
 

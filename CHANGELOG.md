@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7] - 2026-04-22
+
+### Added
+
+- **Workflow aliases** — Three new commands for common development workflows:
+  - `cargo skill review` — combines `err` + `test` + `lint` prefixes with Layer 2
+  - `cargo skill refactor` — combines `type` + `api` + `name` prefixes with Layer 2
+  - `cargo skill debug` — combines `err` + `mem` prefixes with Layer 2 quick-reference
+  - All workflows write combined context to `.skill/context.md`
+  - `cargo skill status` detects and displays active workflow context
+- **Claude Code slash commands** — Generated on `cargo skill init` when Claude Code is detected:
+  - `.claude/commands/skill-lookup.md` → `/skill-lookup` slash command
+  - `.claude/commands/skill-think.md` → `/skill-think` slash command
+  - `.claude/commands/skill-write.md` → `/skill-write` slash command
+  - `.claude/commands/skill-clear.md` → `/skill-clear` slash command
+  - Each command contains the prompt for Claude Code to execute
+  - `.claude/commands/` added to gitignore management
+
+### Fixed
+
+- `cmd_debug` now fails explicitly if Layer 2 "Compiler Error Quick Reference" section is missing
+- Removed compiler warnings: unused `Layer` import, unused `temp` variables in tests
+
 ## [0.2.6] - 2026-04-14
 
 ### Added
