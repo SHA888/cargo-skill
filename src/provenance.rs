@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn test_provenance_new() {
-        let temp = TempDir::new().unwrap();
+        let _temp = TempDir::new().unwrap();
         let agents = vec![Agent::ClaudeCode, Agent::Cursor];
         let content = "test skill content";
 
@@ -278,7 +278,7 @@ mod tests {
 
     #[test]
     fn test_provenance_to_markdown() {
-        let temp = TempDir::new().unwrap();
+        let _temp = TempDir::new().unwrap();
         let agents = vec![Agent::ClaudeCode];
         let content = "test";
 

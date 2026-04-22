@@ -350,3 +350,63 @@ fn test_workflow_prefixes_valid() {
         );
     }
 }
+
+#[test]
+fn test_init_deploys_claude_commands_when_claude_detected() {
+    let temp = setup_test_repo();
+
+    // Create Claude directory so agent is detectable
+    fs::create_dir(temp.path().join(".claude")).unwrap();
+
+    let agents = detect::agents(temp.path());
+    assert!(
+        agents.contains(&detect::Agent::ClaudeCode),
+        "ClaudeCode should be detected"
+    );
+
+    // Deploy skill files then commands
+    deploy::deploy(&agents, temp.path()).unwrap();
+    deploy::deploy_claude_commands(temp.path()).unwrap();
+
+    let commands_dir = temp.path().join(".claude/commands");
+    assert!(commands_dir.exists(), "commands dir should exist");
+    assert!(commands_dir.join("skill-lookup.md").exists());
+    assert!(commands_dir.join("skill-think.md").exists());
+    assert!(commands_dir.join("skill-write.md").exists());
+    assert!(commands_dir.join("skill-clear.md").exists());
+}
+
+#[test]
+fn test_claude_commands_each_references_correct_subcommand() {
+    let temp = setup_test_repo();
+
+    deploy::deploy_claude_commands(temp.path()).unwrap();
+
+    let cases = [
+        ("skill-lookup.md", "cargo skill lookup"),
+        ("skill-think.md", "cargo skill think"),
+        ("skill-write.md", "cargo skill write"),
+        ("skill-clear.md", "cargo skill clear"),
+    ];
+
+    for (file, expected) in cases {
+        let content =
+            fs::read_to_string(temp.path().join(".claude/commands").join(file)).unwrap();
+        assert!(
+            content.contains(expected),
+            "{} should reference '{}'",
+            file,
+            expected
+        );
+    }
+}
+
+#[test]
+fn test_init_ensures_gitignore_includes_claude_commands() {
+    let temp = setup_test_repo();
+
+    gitignore::ensure(temp.path()).unwrap();
+
+    let content = fs::read_to_string(temp.path().join(".gitignore")).unwrap();
+    assert!(content.contains(".claude/commands/"));
+}

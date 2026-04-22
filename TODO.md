@@ -84,13 +84,13 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
   - Equivalent to: `lookup err` + `lookup mem` + Layer 2 (compiler quick-ref section only)
 
 ### Claude Code slash commands (pattern from `addyosmani/agent-skills`)
-- [ ] 2.21 — Generate `.claude/commands/` entries on `cargo skill init` for Claude Code
+- [x] 2.21 — Generate `.claude/commands/` entries on `cargo skill init` for Claude Code
   - `skill-lookup.md` → `/skill-lookup` slash command
   - `skill-think.md` → `/skill-think` slash command
   - `skill-write.md` → `/skill-write` slash command
   - `skill-clear.md` → `/skill-clear` slash command
   - Each command file contains the prompt Claude Code should run when invoked
-- [ ] 2.22 — Tests for `.claude/commands/` file generation
+- [x] 2.22 — Tests for `.claude/commands/` file generation
 
 ### Tests
 - [x] 2.10 — Tests for shorthand prefix dispatch

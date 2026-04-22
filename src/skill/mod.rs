@@ -42,7 +42,7 @@ pub fn load_lookup_filtered(prefix: Option<&str>) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use layer::{Layer, LayerSet};
+    use layer::LayerSet;
 
     #[test]
     fn test_load_lookup() {

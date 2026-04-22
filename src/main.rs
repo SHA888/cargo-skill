@@ -229,6 +229,18 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
             )));
         }
 
+        // Deploy Claude Code slash commands if ClaudeCode is detected
+        if agents.contains(&detect::Agent::ClaudeCode) {
+            let commands = deploy::deploy_claude_commands(&repo.root)
+                .context("Failed to deploy Claude Code commands")?;
+            for cmd in &commands {
+                info(&success(&format!(
+                    " deployed command {}",
+                    cmd.file_name().unwrap().to_string_lossy()
+                )));
+            }
+        }
+
         // Write provenance record
         let skill_content = include_str!("../assets/rust/layer1.md");
         provenance::write(&repo.root, &agents, skill_content)

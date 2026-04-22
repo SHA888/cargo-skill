@@ -14,6 +14,9 @@ Cargo.lock
 .DS_Store
 Thumbs.db
 
+# Claude
+CLAUDE.md
+
 # cargo-skill ephemeral context
 .skill/
 .cursor/rules/skill-context.md

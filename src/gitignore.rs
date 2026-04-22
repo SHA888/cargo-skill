@@ -11,6 +11,8 @@ const CURSOR_CONTEXT_GITIGNORE_ENTRY: &str = ".cursor/rules/skill-context.md";
 const WINDSURF_CONTEXT_GITIGNORE_ENTRY: &str = ".windsurf/rules/skill-context.md";
 #[allow(dead_code)]
 const PROVENANCE_GITIGNORE_ENTRY: &str = ".skill/provenance.md";
+#[allow(dead_code)]
+const CLAUDE_COMMANDS_GITIGNORE_ENTRY: &str = ".claude/commands/";
 
 /// Ensure skill-related paths are in `.gitignore`
 ///
@@ -18,6 +20,7 @@ const PROVENANCE_GITIGNORE_ENTRY: &str = ".skill/provenance.md";
 /// - `.skill/` — main context directory
 /// - `.cursor/rules/skill-context.md` — Cursor agent context
 /// - `.windsurf/rules/skill-context.md` — Windsurf agent context
+/// - `.claude/commands/` — Claude Code slash commands
 ///
 /// - Reads `.gitignore` if present
 /// - Checks if entries already present
@@ -29,6 +32,7 @@ pub fn ensure(repo_root: &Path) -> Result<()> {
         SKILL_GITIGNORE_ENTRY,
         CURSOR_CONTEXT_GITIGNORE_ENTRY,
         WINDSURF_CONTEXT_GITIGNORE_ENTRY,
+        CLAUDE_COMMANDS_GITIGNORE_ENTRY,
     ];
 
     if gitignore_path.exists() {
@@ -92,6 +96,7 @@ mod tests {
         assert!(content.contains(".skill/"));
         assert!(content.contains(".cursor/rules/skill-context.md"));
         assert!(content.contains(".windsurf/rules/skill-context.md"));
+        assert!(content.contains(".claude/commands/"));
     }
 
     #[test]
@@ -108,6 +113,7 @@ mod tests {
         assert!(content.contains(".skill/"));
         assert!(content.contains(".cursor/rules/skill-context.md"));
         assert!(content.contains(".windsurf/rules/skill-context.md"));
+        assert!(content.contains(".claude/commands/"));
     }
 
     #[test]
@@ -117,7 +123,7 @@ mod tests {
 
         fs::write(
             &gitignore_path,
-            "target/\n.skill/\n.cursor/rules/skill-context.md\n.windsurf/rules/skill-context.md\n",
+            "target/\n.skill/\n.cursor/rules/skill-context.md\n.windsurf/rules/skill-context.md\n.claude/commands/\n",
         )
         .unwrap();
 
@@ -141,6 +147,7 @@ mod tests {
                 .count(),
             1
         );
+        assert_eq!(final_content.matches(".claude/commands/").count(), 1);
     }
 
     #[test]

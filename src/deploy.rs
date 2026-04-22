@@ -2,7 +2,7 @@ use crate::detect::Agent;
 use anyhow::{Context, Result};
 use std::fs;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 const SKILL_HEADER: &str = "# Rust Skill Reference\n\nThis section provides a quick lookup index for Rust development rules.\n";
 
@@ -13,6 +13,12 @@ It contains the active skill layer for this session.
 Apply it on top of this index.
 @.skill/context.md
 "#;
+
+// Claude Code slash command prompts
+const CMD_LOOKUP_PROMPT: &str = "Load Layer 1 (lookup) skill context. Run: cargo skill lookup";
+const CMD_THINK_PROMPT: &str = "Load Layers 1+2 (lookup + reasoning) skill context. Run: cargo skill think";
+const CMD_WRITE_PROMPT: &str = "Load all layers (lookup + reasoning + execution) skill context. Run: cargo skill write";
+const CMD_CLEAR_PROMPT: &str = "Clear the active skill context. Run: cargo skill clear";
 
 /// Deploy skill files to all detected agents
 pub fn deploy(agents: &[Agent], repo_root: &Path) -> Result<()> {
@@ -93,6 +99,33 @@ fn deploy_to_agents_md(repo_root: &Path, content: &str) -> Result<()> {
     Ok(())
 }
 
+/// Deploy Claude Code slash commands to `.claude/commands/`
+///
+/// Creates command files for `/skill-lookup`, `/skill-think`, `/skill-write`, `/skill-clear`
+pub fn deploy_claude_commands(repo_root: &Path) -> Result<Vec<PathBuf>> {
+    let commands_dir = repo_root.join(".claude/commands");
+    fs::create_dir_all(&commands_dir)
+        .with_context(|| format!("Failed to create {}", commands_dir.display()))?;
+
+    let commands = [
+        ("skill-lookup.md", CMD_LOOKUP_PROMPT),
+        ("skill-think.md", CMD_THINK_PROMPT),
+        ("skill-write.md", CMD_WRITE_PROMPT),
+        ("skill-clear.md", CMD_CLEAR_PROMPT),
+    ];
+
+    let mut deployed = Vec::new();
+
+    for (filename, prompt) in commands {
+        let path = commands_dir.join(filename);
+        fs::write(&path, prompt)
+            .with_context(|| format!("Failed to write {}", path.display()))?;
+        deployed.push(path);
+    }
+
+    Ok(deployed)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -107,6 +140,61 @@ mod tests {
         assert!(skill_path.exists());
         let content = fs::read_to_string(&skill_path).unwrap();
         assert!(content.contains("Layer 1"));
+    }
+
+    #[test]
+    fn test_deploy_claude_commands_creates_files() {
+        let temp = TempDir::new().unwrap();
+
+        let deployed = deploy_claude_commands(temp.path()).unwrap();
+        assert_eq!(deployed.len(), 4);
+
+        // Verify all command files exist
+        assert!(temp.path().join(".claude/commands/skill-lookup.md").exists());
+        assert!(temp.path().join(".claude/commands/skill-think.md").exists());
+        assert!(temp.path().join(".claude/commands/skill-write.md").exists());
+        assert!(temp.path().join(".claude/commands/skill-clear.md").exists());
+    }
+
+    #[test]
+    fn test_deploy_claude_commands_content() {
+        let temp = TempDir::new().unwrap();
+
+        deploy_claude_commands(temp.path()).unwrap();
+
+        // Verify lookup command content
+        let lookup_content = fs::read_to_string(temp.path().join(".claude/commands/skill-lookup.md")).unwrap();
+        assert!(lookup_content.contains("cargo skill lookup"));
+
+        // Verify think command content
+        let think_content = fs::read_to_string(temp.path().join(".claude/commands/skill-think.md")).unwrap();
+        assert!(think_content.contains("cargo skill think"));
+
+        // Verify write command content
+        let write_content = fs::read_to_string(temp.path().join(".claude/commands/skill-write.md")).unwrap();
+        assert!(write_content.contains("cargo skill write"));
+
+        // Verify clear command content
+        let clear_content = fs::read_to_string(temp.path().join(".claude/commands/skill-clear.md")).unwrap();
+        assert!(clear_content.contains("cargo skill clear"));
+    }
+
+    #[test]
+    fn test_deploy_claude_commands_is_idempotent() {
+        let temp = TempDir::new().unwrap();
+
+        // Deploy twice
+        deploy_claude_commands(temp.path()).unwrap();
+        deploy_claude_commands(temp.path()).unwrap();
+
+        // Should still have 4 files
+        let commands_dir = temp.path().join(".claude/commands");
+        let entries: Vec<_> = fs::read_dir(&commands_dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().extension().map(|ext| ext == "md").unwrap_or(false))
+            .collect();
+        assert_eq!(entries.len(), 4);
     }
 
     #[test]
