@@ -16,8 +16,10 @@ Apply it on top of this index.
 
 // Claude Code slash command prompts
 const CMD_LOOKUP_PROMPT: &str = "Load Layer 1 (lookup) skill context. Run: cargo skill lookup";
-const CMD_THINK_PROMPT: &str = "Load Layers 1+2 (lookup + reasoning) skill context. Run: cargo skill think";
-const CMD_WRITE_PROMPT: &str = "Load all layers (lookup + reasoning + execution) skill context. Run: cargo skill write";
+const CMD_THINK_PROMPT: &str =
+    "Load Layers 1+2 (lookup + reasoning) skill context. Run: cargo skill think";
+const CMD_WRITE_PROMPT: &str =
+    "Load all layers (lookup + reasoning + execution) skill context. Run: cargo skill write";
 const CMD_CLEAR_PROMPT: &str = "Clear the active skill context. Run: cargo skill clear";
 
 /// Deploy skill files to all detected agents
@@ -118,8 +120,7 @@ pub fn deploy_claude_commands(repo_root: &Path) -> Result<Vec<PathBuf>> {
 
     for (filename, prompt) in commands {
         let path = commands_dir.join(filename);
-        fs::write(&path, prompt)
-            .with_context(|| format!("Failed to write {}", path.display()))?;
+        fs::write(&path, prompt).with_context(|| format!("Failed to write {}", path.display()))?;
         deployed.push(path);
     }
 
@@ -150,7 +151,11 @@ mod tests {
         assert_eq!(deployed.len(), 4);
 
         // Verify all command files exist
-        assert!(temp.path().join(".claude/commands/skill-lookup.md").exists());
+        assert!(
+            temp.path()
+                .join(".claude/commands/skill-lookup.md")
+                .exists()
+        );
         assert!(temp.path().join(".claude/commands/skill-think.md").exists());
         assert!(temp.path().join(".claude/commands/skill-write.md").exists());
         assert!(temp.path().join(".claude/commands/skill-clear.md").exists());
@@ -163,19 +168,23 @@ mod tests {
         deploy_claude_commands(temp.path()).unwrap();
 
         // Verify lookup command content
-        let lookup_content = fs::read_to_string(temp.path().join(".claude/commands/skill-lookup.md")).unwrap();
+        let lookup_content =
+            fs::read_to_string(temp.path().join(".claude/commands/skill-lookup.md")).unwrap();
         assert!(lookup_content.contains("cargo skill lookup"));
 
         // Verify think command content
-        let think_content = fs::read_to_string(temp.path().join(".claude/commands/skill-think.md")).unwrap();
+        let think_content =
+            fs::read_to_string(temp.path().join(".claude/commands/skill-think.md")).unwrap();
         assert!(think_content.contains("cargo skill think"));
 
         // Verify write command content
-        let write_content = fs::read_to_string(temp.path().join(".claude/commands/skill-write.md")).unwrap();
+        let write_content =
+            fs::read_to_string(temp.path().join(".claude/commands/skill-write.md")).unwrap();
         assert!(write_content.contains("cargo skill write"));
 
         // Verify clear command content
-        let clear_content = fs::read_to_string(temp.path().join(".claude/commands/skill-clear.md")).unwrap();
+        let clear_content =
+            fs::read_to_string(temp.path().join(".claude/commands/skill-clear.md")).unwrap();
         assert!(clear_content.contains("cargo skill clear"));
     }
 

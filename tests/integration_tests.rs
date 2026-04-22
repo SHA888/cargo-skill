@@ -390,8 +390,7 @@ fn test_claude_commands_each_references_correct_subcommand() {
     ];
 
     for (file, expected) in cases {
-        let content =
-            fs::read_to_string(temp.path().join(".claude/commands").join(file)).unwrap();
+        let content = fs::read_to_string(temp.path().join(".claude/commands").join(file)).unwrap();
         assert!(
             content.contains(expected),
             "{} should reference '{}'",
