@@ -123,6 +123,37 @@ See [CHANGELOG.md](CHANGELOG.md) for the full release history. Recent highlights
 
 ---
 
+## Installation
+
+```bash
+cargo install cargo-skill
+```
+
+### Post-installation setup
+
+After installation, ensure `~/.cargo/bin` is in your PATH (Cargo usually does this automatically). Then optionally add a shell alias for convenience:
+
+**Bash/Zsh:**
+```bash
+echo 'alias skill="cargo skill"' >> ~/.bashrc  # or ~/.zshrc
+source ~/.bashrc  # or ~/.zshrc
+```
+
+**Fish:**
+```bash
+alias skill "cargo skill"
+funcsave skill
+```
+
+Now you can use `skill` as a shorthand:
+```bash
+skill status
+skill review
+skill own
+```
+
+---
+
 ## Requirements
 
 - Rust stable (latest)
