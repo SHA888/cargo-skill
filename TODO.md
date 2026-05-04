@@ -106,13 +106,13 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 ## v0.3.0 — Python/uv Skill Content
 
 ### Asset authoring
-- [ ] 3.1 — Author `assets/python/layer1.md`
+- [x] 3.1 — Author `assets/python/layer1.md`
   - Categories: typing, error, async, packaging, testing, perf, doc, name, proj, lint, anti
   - Rules aligned with: PEP 8, PEP 484, mypy docs, uv docs, ruff docs, attrs/pydantic patterns
-- [ ] 3.2 — Author `assets/python/layer2.md`
+- [x] 3.2 — Author `assets/python/layer2.md`
   - Cognitive model adapted for Python: duck typing vs structural subtyping, GIL implications
   - Common type error quick-ref (mypy error codes)
-- [ ] 3.3 — Author `assets/python/layer3.md`
+- [x] 3.3 — Author `assets/python/layer3.md`
   - RPI loop for Python: uv run, ruff check, mypy, pytest
   - Verification checklist: `uv run ruff check`, `uv run mypy`, `uv run pytest`
 
