@@ -7,14 +7,22 @@ The RPI loop defines the iterative workflow that ensures code quality at every s
 2. **Plan** – Review the output, identify failures or style violations, and decide on edits.
 3. **Inspect** – Re‑run the suite to confirm the issue is resolved before committing.
 
-Typical commands (run from the repository root):
-```sh
-uv run ruff format --check
-uv run ruff check
-uv run mypy . --strict
-uv run pytest --doctest-modules
-```
-These commands are fast enough to be run after each small edit, keeping the feedback loop tight.
+### Command Sequence (in order)
+Run these commands in the following order from the repository root:
+
+1. **Format:** `uv run ruff format --check`  
+   Ensures code adheres to style rules. Run this first to avoid cascading false positives in lint and type‑check.
+
+2. **Lint:** `uv run ruff check`  
+   Identifies unused imports, potential bugs, and style violations. Comes after format to avoid noise.
+
+3. **Type Check:** `uv run mypy . --strict`  
+   Enforces static type safety. Comes after lint since some lint fixes (e.g., removing unused imports) can affect type errors.
+
+4. **Test:** `uv run pytest --doctest-modules`  
+   Runs unit, integration, and doctest suites. Comes last to validate that all prior checks pass and behavior is correct.
+
+These commands are fast enough to be run after each small edit, keeping the feedback loop tight. The sequence ensures that earlier checks do not produce false positives for subsequent checks.
 
 ## 2. Verification Checklist
 Before marking a change as ready for PR, ensure the following checks all pass:
@@ -22,11 +30,11 @@ Before marking a change as ready for PR, ensure the following checks all pass:
 - **Linting** – `uv run ruff check` reports zero errors/warnings.
 - **Static Typing** – `uv run mypy . --strict` reports no type errors.
 - **Testing** – `uv run pytest --doctest-modules` runs all unit, integration, and doctest suites with a passing result.
-- **Coverage** – Optional: `uv run coverage run -m pytest && uv run coverage report --fail-under=90` to enforce ≥90 % coverage for new code.
+- **Coverage** – Optional: `uv run coverage run -m pytest && uv run coverage report --fail-under=90` to enforce ≥90 % coverage for new code.
 - **Performance** – If the change touches a hot path, run `uv run python -m cProfile -m pytest` and verify no regressions.
 
 ## 3. CI Integration
-The same command set should be used in CI to guarantee parity between local and remote builds. Add a script `scripts/ci_check.sh` that runs the above commands and exits with a non‑zero status on failure.
+The same command set should be used in CI to guarantee parity between local and remote builds. Add a script `scripts/ci_check.sh` that runs the above commands in sequence and exits with a non‑zero status on failure.
 
 ## 4. Common Pitfalls
 | Symptom | Likely Cause | Fix |
@@ -37,4 +45,4 @@ The same command set should be used in CI to guarantee parity between local and 
 | Coverage drop | New code lacks tests | Add unit tests covering new branches |
 
 ---
-*Layer 3 completes the asset authoring series by codifying the development feedback loop and providing a concrete checklist for verification.*
+*Layer 3 completes the asset authoring series by codifying the development feedback loop and providing a concrete checklist for verification.*
