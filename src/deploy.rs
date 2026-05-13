@@ -101,6 +101,37 @@ fn deploy_to_agents_md(repo_root: &Path, content: &str) -> Result<()> {
     Ok(())
 }
 
+/// Deploy agent personas to `.claude/skills/agents/`
+///
+/// Agent personas are Claude Code system prompt suggestions for specialized review/architecture tasks.
+/// Deploys rust-reviewer.md and rust-architect.md as reference guides.
+pub fn deploy_agent_personas(repo_root: &Path) -> Result<Vec<PathBuf>> {
+    let agents_dir = repo_root.join(".claude/skills/agents");
+    fs::create_dir_all(&agents_dir)
+        .with_context(|| format!("Failed to create {}", agents_dir.display()))?;
+
+    let personas = [
+        (
+            "rust-reviewer.md",
+            include_str!("../assets/agents/rust-reviewer.md"),
+        ),
+        (
+            "rust-architect.md",
+            include_str!("../assets/agents/rust-architect.md"),
+        ),
+    ];
+
+    let mut deployed = Vec::new();
+
+    for (filename, content) in personas {
+        let path = agents_dir.join(filename);
+        fs::write(&path, content).with_context(|| format!("Failed to write {}", path.display()))?;
+        deployed.push(path);
+    }
+
+    Ok(deployed)
+}
+
 /// Deploy Claude Code slash commands to `.claude/commands/`
 ///
 /// Creates command files for `/skill-lookup`, `/skill-think`, `/skill-write`, `/skill-clear`
@@ -320,5 +351,77 @@ mod tests {
         // Cursor should NOT have the context footer
         assert!(!content.contains("## Active Session Context"));
         assert!(!content.contains("@.skill/context.md"));
+    }
+
+    #[test]
+    fn test_deploy_agent_personas_creates_directory() {
+        let temp = TempDir::new().unwrap();
+
+        deploy_agent_personas(temp.path()).unwrap();
+
+        let agents_dir = temp.path().join(".claude/skills/agents");
+        assert!(agents_dir.exists());
+    }
+
+    #[test]
+    fn test_deploy_agent_personas_deploys_files() {
+        let temp = TempDir::new().unwrap();
+
+        let deployed = deploy_agent_personas(temp.path()).unwrap();
+        assert_eq!(deployed.len(), 2);
+
+        // Verify both persona files exist
+        assert!(
+            temp.path()
+                .join(".claude/skills/agents/rust-reviewer.md")
+                .exists()
+        );
+        assert!(
+            temp.path()
+                .join(".claude/skills/agents/rust-architect.md")
+                .exists()
+        );
+    }
+
+    #[test]
+    fn test_deploy_agent_personas_content() {
+        let temp = TempDir::new().unwrap();
+
+        deploy_agent_personas(temp.path()).unwrap();
+
+        // Verify reviewer persona content
+        let reviewer_content =
+            fs::read_to_string(temp.path().join(".claude/skills/agents/rust-reviewer.md")).unwrap();
+        assert!(reviewer_content.contains("Rust Reviewer Agent"));
+        assert!(reviewer_content.contains("Correctness"));
+        assert!(reviewer_content.contains("Safety"));
+        assert!(reviewer_content.contains("anti-"));
+        assert!(reviewer_content.contains("lint-"));
+
+        // Verify architect persona content
+        let architect_content =
+            fs::read_to_string(temp.path().join(".claude/skills/agents/rust-architect.md"))
+                .unwrap();
+        assert!(architect_content.contains("Rust Architect Agent"));
+        assert!(architect_content.contains("API Design"));
+        assert!(architect_content.contains("api-"));
+        assert!(architect_content.contains("proj-"));
+        assert!(architect_content.contains("type-"));
+    }
+
+    #[test]
+    fn test_deploy_agent_personas_is_idempotent() {
+        let temp = TempDir::new().unwrap();
+
+        // Deploy twice
+        deploy_agent_personas(temp.path()).unwrap();
+        let first_content =
+            fs::read_to_string(temp.path().join(".claude/skills/agents/rust-reviewer.md")).unwrap();
+
+        deploy_agent_personas(temp.path()).unwrap();
+        let second_content =
+            fs::read_to_string(temp.path().join(".claude/skills/agents/rust-reviewer.md")).unwrap();
+
+        assert_eq!(first_content, second_content);
     }
 }

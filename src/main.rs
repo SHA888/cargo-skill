@@ -239,6 +239,16 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
                     cmd.file_name().unwrap().to_string_lossy()
                 )));
             }
+
+            // Deploy agent personas for Claude Code
+            let personas = deploy::deploy_agent_personas(&repo.root)
+                .context("Failed to deploy agent personas")?;
+            for persona in &personas {
+                info(&success(&format!(
+                    " deployed agent persona {}",
+                    persona.file_name().unwrap().to_string_lossy()
+                )));
+            }
         }
 
         // Write provenance record
