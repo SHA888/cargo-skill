@@ -2,9 +2,33 @@
 
 A Cargo subcommand for deploying and activating layered AI agent skills in Rust projects.
 
+## Install
+
 ```
 cargo install cargo-skill
 ```
+
+## Upgrade
+
+The same command upgrades to the latest version on crates.io:
+
+```
+cargo install cargo-skill
+```
+
+Cargo silently skips when you're already on the latest version; it only installs
+if a newer one exists. Use `--force` to reinstall the same version (e.g., to
+refresh the deployed asset bundle):
+
+```
+cargo install cargo-skill --force
+```
+
+Note: `cargo update cargo-skill` is **not** the right command — `cargo update`
+operates on a project's `Cargo.lock` and does not touch installed binaries.
+
+After upgrading, re-run `cargo skill init` in each project to deploy the new
+skill assets (use `--force` to overwrite previously deployed files).
 
 ---
 
