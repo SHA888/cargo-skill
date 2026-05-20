@@ -87,15 +87,18 @@ gitignored, overwritten on each invocation, deleted by `clear`.
 | Agent       | Install path                             | Content                        |
 |-------------|------------------------------------------|--------------------------------|
 | Claude Code | `.claude/skills/rust.md`                 | Rust skill layers              |
+|             | `.claude/skills/python.md`               | Python skill layers (if detected) |
 |             | `.claude/commands/*.md` (slash)          | Skill workflow slash commands  |
 |             | `.claude/skills/agents/rust-*.md`        | Agent personas                 |
 | Cursor      | `.cursor/rules/rust.md`                  | Rust skill layers              |
+|             | `.cursor/rules/python.md`                | Python skill layers (if detected) |
 | Windsurf    | `.windsurf/rules/rust.md`                | Rust skill layers              |
+|             | `.windsurf/rules/python.md`              | Python skill layers (if detected) |
 | AGENTS.md   | `AGENTS.md` (appended)                   | Fallback for other agents      |
 
 ---
 
-## Skill content (v0.2.7)
+## Skill content (v0.3.0)
 
 ### Rust (stable)
 
@@ -112,6 +115,29 @@ Three-layer skill with 14-category rule index:
 Sources: `leonardomso/rust-skills` (MIT), `actionbook/rust-skills` (MIT),
 `udapy/rust-agentic-skills` (MIT).
 
+### Python (stable)
+
+Three-layer skill with PEP-aligned guidelines:
+
+- **Layer 1 — Lookup**: Coding style (PEP 8), type annotations (PEP 484), async patterns,
+  packaging (PEP 517/518), testing (pytest), performance, documentation (Google style),
+  naming conventions, project layout, linting (ruff), and anti-patterns
+- **Layer 2 — Reasoning**: Cognitive model for duck typing and structural subtyping,
+  GIL implications, mypy error quick-reference
+- **Layer 3 — Execution**: RPI loop for Python (uv run, ruff check, mypy, pytest),
+  verification checklist aligned with uv workflows
+
+Sources: PEP standards, mypy docs, uv docs, ruff docs, attrs/pydantic patterns.
+
+### Mixed Repository Support
+
+For projects with both Cargo.toml and pyproject.toml:
+- Both Rust and Python skill layers deployed to agents
+- Bare prefix commands error with hint to use explicit selector
+- `cargo skill lookup rust:<prefix>` routes to Rust assets
+- `cargo skill lookup py:<prefix>` routes to Python assets
+- Both selectors available as shorthands: `cargo skill rust:err`, `cargo skill py:test`
+
 ### Agent Personas (v0.2.7)
 
 Deployed to `.claude/skills/agents/` on `cargo skill init`:
@@ -120,11 +146,6 @@ Deployed to `.claude/skills/agents/` on `cargo skill init`:
   maps to `api-`, `proj-`, `type-` prefix rules
 - **rust-reviewer.md** — Senior code reviewer persona with five-axis review
   (correctness, safety, perf, API, docs), maps to `anti-` + `lint-` prefix rules
-
-### Python (in development)
-
-Layer assets exist (`assets/python/`) but stack detection (pyproject.toml, uv.lock)
-is not yet implemented. Multi-language context routing planned for v0.3.x.
 
 ---
 

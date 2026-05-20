@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-20
+
+### Added
+
+- **Python/uv stack detection and skill routing**:
+  - Detect Python projects via `pyproject.toml` presence
+  - Detect uv package manager via `uv.lock` or `[tool.uv]` in `pyproject.toml`
+  - `cargo skill init` deploys Python skill layers when Python stack detected
+  - `cargo skill lookup <prefix>` routes to correct language asset (Rust or Python)
+  - Python Layer 1 covers: typing, error handling, async, packaging, testing, performance, documentation, naming, project layout, linting, and anti-patterns
+  - Python Layer 2 includes cognitive model adapted for duck typing and GIL implications with mypy error quick-reference
+  - Python Layer 3 provides RPI loop for Python development with uv, ruff, and mypy verification checklist
+
+- **Mixed repository support** (both Cargo.toml + pyproject.toml):
+  - `cargo skill status` shows both Rust and Python stacks when present
+  - Bare `cargo skill lookup <prefix>` errors with helpful hint when both stacks detected
+  - Explicit language selectors: `cargo skill lookup rust:<prefix>` and `cargo skill lookup py:<prefix>`
+  - Shorthand shorthands work: `cargo skill rust:err`, `cargo skill py:test`, etc.
+  - Both skill files deployable to same agent directory for polyglot projects
+
+### Changed
+
+- `cargo skill status` now shows language stack detection (✓ for detected, ✗ for not present)
+- Multi-language skill content deployed to agents when multiple stacks detected
+
 ## [0.2.7] - 2026-04-22
 
 ### Added
