@@ -142,10 +142,10 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ### Stack detection
 
-- [ ] 3.4 — Detect Python projects via `pyproject.toml` presence
-- [ ] 3.5 — Detect uv via `uv.lock` or `[tool.uv]` in `pyproject.toml`
-- [ ] 3.6 — `cargo skill init` deploys Python layers when Python stack detected
-- [ ] 3.7 — `cargo skill lookup <prefix>` routes to correct language asset
+- [x] 3.4 — Detect Python projects via `pyproject.toml` presence
+- [x] 3.5 — Detect uv via `uv.lock` or `[tool.uv]` in `pyproject.toml`
+- [x] 3.6 — `cargo skill init` deploys Python layers when Python stack detected
+- [x] 3.7 — `cargo skill lookup <prefix>` routes to correct language asset
 
 ### Multi-language context
 
@@ -157,8 +157,8 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ### Tests
 
-- [ ] 3.9 — Detection tests for Python/uv stack
-- [ ] 3.10 — Asset content tests (prefix filter works on Python layer1)
+- [x] 3.9 — Detection tests for Python/uv stack
+- [x] 3.10 — Asset content tests (prefix filter works on Python layer1)
 
 ---
 
