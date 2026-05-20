@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-05-20
+
+### Changed
+
+- **Python skill content brought to expert-level parity with Rust**:
+  - **Layer 1** rewritten with the same 14-prefix rule index format as Rust
+    (`own-`, `err-`, `mem-`, `api-`, `async-`, `opt-`, `type-`, `perf-`,
+    `test-`, `doc-`, `name-`, `proj-`, `lint-`, `anti-`)
+  - 192 specific rules across all prefixes, each with an identifier slug
+    and actionable guidance (e.g., `err-07 errorgroup-311`, `async-06 task-group-311`)
+  - Modern Python: PEP 604 union syntax (`int | None`), lowercase generics
+    (`list[T]`), Python 3.11+ features (TaskGroup, ExceptionGroup, Self,
+    StrEnum), PEP 702 deprecated decorator, `type X = ...` statement (3.12+)
+  - Real library recommendations: pydantic v2, attrs, anyio, httpx,
+    hypothesis, ruff, mypy, uv, freezegun, pytest-mock, testcontainers,
+    tenacity
+  - **Layer 2** adds cognitive model (Domain → Design → Mechanics), question
+    routing table, anti-rationalization table, 14-entry mypy error quick
+    reference with code examples, GIL & concurrency model guide, pydantic
+    vs attrs vs dataclass selection matrix, "parse don't validate" guidance
+  - **Layer 3** adds RPI loop, verification command sequence with ordering
+    rationale, full verification checklist (correctness/code quality/type
+    safety/async/performance), task-to-rule mapping, common pitfalls table,
+    pre-commit configuration
+
+### Fixed
+
+- `cargo skill lookup py:<prefix>` now actually filters Python content by
+  category (previously dumped the whole file because Python Layer 1 lacked
+  the prefix structure)
+
 ## [0.3.0] - 2026-05-20
 
 ### Added
