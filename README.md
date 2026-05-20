@@ -49,7 +49,7 @@ cargo skill err            # Same as: cargo skill lookup err
 
 All 14 prefixes work: `own`, `err`, `mem`, `api`, `async`, `opt`, `type`, `perf`, `test`, `doc`, `name`, `proj`, `lint`, `anti`
 
-See [skill layer reference](docs/layers.md) for all available prefixes.
+See [Layer 1 reference](#skill-content-v027) for all available prefixes.
 
 ---
 
@@ -59,8 +59,10 @@ See [skill layer reference](docs/layers.md) for all available prefixes.
 
 1. Detects repo type — single crate or workspace
 2. Detects which agents are present (`.claude/`, `.cursor/`, `.windsurf/`, `AGENTS.md`)
-3. Deploys bundled `SKILL.md` to the correct path for each detected agent
-4. Adds `.skill/` to `.gitignore`
+3. Deploys bundled skill layers (`layer1.md`, `layer2.md`, `layer3.md`) and agent personas
+   to the correct paths for each detected agent
+4. Generates Claude Code slash commands (`.claude/commands/*.md`)
+5. Adds `.skill/` and context files to `.gitignore`
 
 ### Execution-time (`lookup` / `think` / `write`)
 
@@ -82,30 +84,47 @@ gitignored, overwritten on each invocation, deleted by `clear`.
 
 ## Agent support
 
-| Agent       | Install path                       |
-|-------------|------------------------------------|
-| Claude Code | `.claude/skills/rust.md`           |
-|             | `.claude/commands/*.md` (slash)    |
-| Cursor      | `.cursor/rules/rust.md`            |
-| Windsurf    | `.windsurf/rules/rust.md`          |
-| AGENTS.md   | `AGENTS.md` (appended)             |
+| Agent       | Install path                             | Content                        |
+|-------------|------------------------------------------|--------------------------------|
+| Claude Code | `.claude/skills/rust.md`                 | Rust skill layers              |
+|             | `.claude/commands/*.md` (slash)          | Skill workflow slash commands  |
+|             | `.claude/skills/agents/rust-*.md`        | Agent personas                 |
+| Cursor      | `.cursor/rules/rust.md`                  | Rust skill layers              |
+| Windsurf    | `.windsurf/rules/rust.md`                | Rust skill layers              |
+| AGENTS.md   | `AGENTS.md` (appended)                   | Fallback for other agents      |
 
 ---
 
 ## Skill content (v0.2.7)
 
-Bundled skill covers Rust only. Three layers:
+### Rust (stable)
 
-- **Layer 1 — Lookup**: 14-category rule index with priority levels (`own-`, `err-`,
+Three-layer skill with 14-category rule index:
+
+- **Layer 1 — Lookup**: Rule categories with priority levels (`own-`, `err-`,
   `mem-`, `api-`, `async-`, `opt-`, `type-`, `perf-`, `test-`, `doc-`, `name-`,
   `proj-`, `lint-`, `anti-`)
 - **Layer 2 — Reasoning**: 3-layer cognitive model (Domain → Design → Mechanics),
-  question routing, compiler error quick-ref
+  question routing, compiler error quick-ref (E0001–E0716)
 - **Layer 3 — Execution**: RPI loop (Research → Plan → Implement), verification
   checklist, task-to-rule mapping
 
 Sources: `leonardomso/rust-skills` (MIT), `actionbook/rust-skills` (MIT),
 `udapy/rust-agentic-skills` (MIT).
+
+### Agent Personas (v0.2.7)
+
+Deployed to `.claude/skills/agents/` on `cargo skill init`:
+
+- **rust-architect.md** — Systems architect persona for API and module design decisions,
+  maps to `api-`, `proj-`, `type-` prefix rules
+- **rust-reviewer.md** — Senior code reviewer persona with five-axis review
+  (correctness, safety, perf, API, docs), maps to `anti-` + `lint-` prefix rules
+
+### Python (in development)
+
+Layer assets exist (`assets/python/`) but stack detection (pyproject.toml, uv.lock)
+is not yet implemented. Multi-language context routing planned for v0.3.x.
 
 ---
 
@@ -113,13 +132,14 @@ Sources: `leonardomso/rust-skills` (MIT), `actionbook/rust-skills` (MIT),
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release history. Recent highlights:
 
-- **v0.2.7** — Workflow aliases (`review`, `refactor`, `debug`) and Claude Code slash commands
+- **v0.2.7** — Workflow aliases (`review`, `refactor`, `debug`), Claude Code slash commands, and agent personas (rust-architect, rust-reviewer)
 - **v0.2.6** — Provenance sidecar (`--quiet` flag, deployment metadata)
 - **v0.2.5** — Colored terminal output (green ✓, yellow ⚠, red ✗)
 - **v0.2.4** — Agent-specific context files for Cursor and Windsurf
 - **v0.2.3** — Claude Code context injection footer
 - **v0.2.2** — `status` command and comprehensive project overview
 - **v0.2.1** — `--dry-run` and `--force` flags for `init`
+- **v0.3.0** (in progress) — Python skill layers authored; stack detection and multi-language routing planned
 
 ---
 
