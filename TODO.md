@@ -159,6 +159,8 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 - [x] 3.9 — Detection tests for Python/uv stack
 - [x] 3.10 — Asset content tests (prefix filter works on Python layer1)
+- [ ] 3.11 — Mixed repo detection tests (both Cargo.toml + pyproject.toml)
+- [ ] 3.12 — Language prompt/selector tests (rust: / py: prefix routing)
 
 ---
 
