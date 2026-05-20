@@ -1,4 +1,4 @@
-use cargo_skill::{context, deploy, detect, gitignore, skill};
+use cargo_skill::{context, deploy, detect, gitignore, lang, skill};
 use std::fs;
 use tempfile::TempDir;
 
@@ -408,4 +408,95 @@ fn test_init_ensures_gitignore_includes_claude_commands() {
 
     let content = fs::read_to_string(temp.path().join(".gitignore")).unwrap();
     assert!(content.contains(".claude/commands/"));
+}
+
+// Task 3.11 — Mixed repo detection tests
+
+#[test]
+fn test_resolve_language_rust_only() {
+    let temp = setup_test_repo();
+    // Rust repo only (Cargo.toml present, no pyproject.toml)
+    let result = lang::resolve_language(temp.path(), None);
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), skill::Language::Rust);
+}
+
+#[test]
+fn test_resolve_language_python_only() {
+    let temp = TempDir::new().unwrap();
+    // Python repo only (pyproject.toml, no Cargo.toml)
+    fs::write(temp.path().join("pyproject.toml"), "[project]\n").unwrap();
+
+    let result = lang::resolve_language(temp.path(), None);
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), skill::Language::Python);
+}
+
+#[test]
+fn test_resolve_language_mixed_errors() {
+    let temp = TempDir::new().unwrap();
+    // Mixed repo (both Cargo.toml and pyproject.toml)
+    fs::write(temp.path().join("Cargo.toml"), "[package]\n").unwrap();
+    fs::write(temp.path().join("pyproject.toml"), "[project]\n").unwrap();
+
+    let result = lang::resolve_language(temp.path(), None);
+    assert!(result.is_err());
+    let err_msg = result.unwrap_err().to_string();
+    assert!(err_msg.contains("Multiple language stacks"));
+    assert!(err_msg.contains("rust:"));
+    assert!(err_msg.contains("py:"));
+}
+
+#[test]
+fn test_resolve_language_mixed_with_explicit_rust() {
+    let temp = TempDir::new().unwrap();
+    // Mixed repo with explicit Rust selection
+    fs::write(temp.path().join("Cargo.toml"), "[package]\n").unwrap();
+    fs::write(temp.path().join("pyproject.toml"), "[project]\n").unwrap();
+
+    let result = lang::resolve_language(temp.path(), Some(skill::Language::Rust));
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), skill::Language::Rust);
+}
+
+#[test]
+fn test_resolve_language_mixed_with_explicit_python() {
+    let temp = TempDir::new().unwrap();
+    // Mixed repo with explicit Python selection
+    fs::write(temp.path().join("Cargo.toml"), "[package]\n").unwrap();
+    fs::write(temp.path().join("pyproject.toml"), "[project]\n").unwrap();
+
+    let result = lang::resolve_language(temp.path(), Some(skill::Language::Python));
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), skill::Language::Python);
+}
+
+// Task 3.12 — Prefix parsing tests
+
+#[test]
+fn test_parse_qualified_prefix_rust_selector() {
+    let (lang, prefix) = lang::parse_qualified_prefix("rust:err");
+    assert_eq!(lang, Some(skill::Language::Rust));
+    assert_eq!(prefix, "err");
+}
+
+#[test]
+fn test_parse_qualified_prefix_py_selector() {
+    let (lang, prefix) = lang::parse_qualified_prefix("py:mem");
+    assert_eq!(lang, Some(skill::Language::Python));
+    assert_eq!(prefix, "mem");
+}
+
+#[test]
+fn test_parse_qualified_prefix_bare_stays_bare() {
+    let (lang, prefix) = lang::parse_qualified_prefix("err");
+    assert_eq!(lang, None);
+    assert_eq!(prefix, "err");
+}
+
+#[test]
+fn test_parse_qualified_prefix_empty_stays_empty() {
+    let (lang, prefix) = lang::parse_qualified_prefix("");
+    assert_eq!(lang, None);
+    assert_eq!(prefix, "");
 }

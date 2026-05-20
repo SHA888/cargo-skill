@@ -1,6 +1,6 @@
 use anstream::println;
 use anyhow::{Context, Result};
-use cargo_skill::{context, deploy, detect, gitignore, provenance, skill};
+use cargo_skill::{context, deploy, detect, gitignore, lang, provenance, skill};
 use clap::{Parser, Subcommand};
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -115,13 +115,18 @@ fn main() -> Result<()> {
         Commands::Debug => cmd_debug(),
         Commands::External(args) => {
             // Shorthand: cargo skill <prefix> → cargo skill lookup <prefix>
+            // Also supports: cargo skill rust:err, cargo skill py:err
             if let Some(first) = args.first() {
                 let cmd = first.as_str();
-                if skill::prefix::VALID_PREFIXES.contains(&cmd) {
+                // Check for qualified prefix shorthand (rust:err, py:err) or bare prefix
+                if cmd.starts_with("rust:")
+                    || cmd.starts_with("py:")
+                    || skill::prefix::VALID_PREFIXES.contains(&cmd)
+                {
                     cmd_lookup(Some(cmd.to_string()))
                 } else {
                     anyhow::bail!(
-                        "Unknown command: '{}'.\nValid commands: init, lookup, think, write, clear, status, review, refactor, debug\nValid prefixes for shorthand: {}",
+                        "Unknown command: '{}'.\nValid commands: init, lookup, think, write, clear, status, review, refactor, debug\nValid prefixes for shorthand: {}\nQualified selectors: rust:<prefix>, py:<prefix>",
                         cmd,
                         skill::prefix::VALID_PREFIXES.join(", ")
                     )
@@ -281,20 +286,24 @@ fn format_repo_kind(kind: &detect::RepoKind) -> &'static str {
     }
 }
 
-fn detect_language(repo_root: &std::path::Path) -> skill::Language {
-    // If no Cargo.toml but pyproject.toml exists, use Python
-    let has_cargo = repo_root.join("Cargo.toml").exists();
-    let has_python = detect::python_stack(repo_root).is_some();
-
-    if !has_cargo && has_python {
-        skill::Language::Python
-    } else {
-        skill::Language::Rust
-    }
-}
-
 fn cmd_lookup(prefix: Option<String>) -> Result<()> {
-    if let Some(ref p) = prefix {
+    // Parse prefix for explicit language selector
+    let (explicit_lang, bare_prefix) = match &prefix {
+        None => (None, None),
+        Some(p) => {
+            let (lang, bare) = lang::parse_qualified_prefix(p);
+            (
+                lang,
+                if bare.is_empty() {
+                    None
+                } else {
+                    Some(bare.to_string())
+                },
+            )
+        }
+    };
+
+    if let Some(ref p) = bare_prefix {
         info(&format!("Activating Layer 1 with prefix: {}", p));
     } else {
         info("Activating Layer 1 (full lookup)");
@@ -303,11 +312,11 @@ fn cmd_lookup(prefix: Option<String>) -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
-    // Detect language
-    let lang = detect_language(&repo.root);
+    // Resolve language (will error if mixed and no explicit language)
+    let language = lang::resolve_language(&repo.root, explicit_lang)?;
 
     // Load Layer 1 with optional prefix filter
-    let content = skill::load_lookup_filtered(prefix.as_deref(), lang)
+    let content = skill::load_lookup_filtered(bare_prefix.as_deref(), language)
         .context("Failed to load skill content")?;
 
     // Write to context
@@ -323,12 +332,12 @@ fn cmd_think() -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
-    // Detect language
-    let lang = detect_language(&repo.root);
+    // Resolve language (will error if mixed)
+    let language = lang::resolve_language(&repo.root, None)?;
 
     // Load Layers 1 + 2
     let layer_set = skill::layer::LayerSet::think();
-    let content = skill::load(&layer_set, lang).context("Failed to load skill content")?;
+    let content = skill::load(&layer_set, language).context("Failed to load skill content")?;
 
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
@@ -343,12 +352,12 @@ fn cmd_write() -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
-    // Detect language
-    let lang = detect_language(&repo.root);
+    // Resolve language (will error if mixed)
+    let language = lang::resolve_language(&repo.root, None)?;
 
     // Load all layers
     let layer_set = skill::layer::LayerSet::write();
-    let content = skill::load(&layer_set, lang).context("Failed to load skill content")?;
+    let content = skill::load(&layer_set, language).context("Failed to load skill content")?;
 
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
@@ -384,8 +393,8 @@ fn cmd_debug() -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
-    // Detect language
-    let lang = detect_language(&repo.root);
+    // Resolve language (will error if mixed)
+    let lang = lang::resolve_language(&repo.root, None)?;
 
     // Load Layer 1 content filtered by err and mem prefixes
     let mut content = String::new();
@@ -545,8 +554,8 @@ fn cmd_workflow(prefixes: &[&str], name: &str) -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
-    // Detect language
-    let lang = detect_language(&repo.root);
+    // Resolve language (will error if mixed)
+    let lang = lang::resolve_language(&repo.root, None)?;
 
     // Load Layer 1 content filtered by multiple prefixes
     let mut content = String::new();

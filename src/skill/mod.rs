@@ -5,7 +5,7 @@ use anyhow::Result;
 use layer::LayerSet;
 
 /// Programming language for skill selection
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Language {
     Rust,
     Python,
