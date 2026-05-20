@@ -53,7 +53,7 @@ fn test_lookup_writes_context() {
     let temp = setup_test_repo();
 
     // Load lookup content and write to context
-    let content = skill::load_lookup_filtered(None).unwrap();
+    let content = skill::load_lookup_filtered(None, skill::Language::Rust).unwrap();
     context::write(temp.path(), &content).unwrap();
 
     // Verify context was written
@@ -69,7 +69,7 @@ fn test_lookup_with_prefix_writes_filtered_context() {
     let temp = setup_test_repo();
 
     // Load lookup content with prefix filter and write to context
-    let content = skill::load_lookup_filtered(Some("own")).unwrap();
+    let content = skill::load_lookup_filtered(Some("own"), skill::Language::Rust).unwrap();
     context::write(temp.path(), &content).unwrap();
 
     // Verify context was written with filter marker
@@ -84,7 +84,7 @@ fn test_think_writes_context() {
 
     // Load think layers and write to context
     let layer_set = skill::layer::LayerSet::think();
-    let content = skill::load(&layer_set).unwrap();
+    let content = skill::load(&layer_set, skill::Language::Rust).unwrap();
     context::write(temp.path(), &content).unwrap();
 
     // Verify context contains both layers
@@ -100,7 +100,7 @@ fn test_write_writes_context() {
 
     // Load all layers and write to context
     let layer_set = skill::layer::LayerSet::write();
-    let content = skill::load(&layer_set).unwrap();
+    let content = skill::load(&layer_set, skill::Language::Rust).unwrap();
     context::write(temp.path(), &content).unwrap();
 
     // Verify context contains all layers
@@ -156,7 +156,7 @@ fn test_shorthand_prefix_dispatch_valid() {
     let temp = setup_test_repo();
 
     // Shorthand: "own" should work the same as lookup with prefix "own"
-    let content = skill::load_lookup_filtered(Some("own")).unwrap();
+    let content = skill::load_lookup_filtered(Some("own"), skill::Language::Rust).unwrap();
     context::write(temp.path(), &content).unwrap();
 
     // Verify context was written with filtered content
@@ -187,7 +187,7 @@ fn test_shorthand_prefixes_are_valid() {
 #[test]
 fn test_shorthand_prefix_invalid_returns_error() {
     // Invalid shorthand prefix should fail validation
-    let result = skill::load_lookup_filtered(Some("invalid"));
+    let result = skill::load_lookup_filtered(Some("invalid"), skill::Language::Rust);
     assert!(result.is_err());
     let err = result.unwrap_err().to_string();
     assert!(err.contains("Unknown prefix"));
@@ -289,9 +289,9 @@ fn test_dry_run_does_not_modify_gitignore() {
 #[test]
 fn test_workflow_review_composition() {
     // Test that review workflow combines err + test + lint prefixes + Layer 2
-    let err_content = skill::load_lookup_filtered(Some("err")).unwrap();
-    let test_content = skill::load_lookup_filtered(Some("test")).unwrap();
-    let lint_content = skill::load_lookup_filtered(Some("lint")).unwrap();
+    let err_content = skill::load_lookup_filtered(Some("err"), skill::Language::Rust).unwrap();
+    let test_content = skill::load_lookup_filtered(Some("test"), skill::Language::Rust).unwrap();
+    let lint_content = skill::load_lookup_filtered(Some("lint"), skill::Language::Rust).unwrap();
 
     // Verify each prefix content contains expected markers
     assert!(err_content.contains("Filtered for prefix: **err-**"));
@@ -307,9 +307,9 @@ fn test_workflow_review_composition() {
 #[test]
 fn test_workflow_refactor_composition() {
     // Test that refactor workflow combines type + api + name prefixes + Layer 2
-    let type_content = skill::load_lookup_filtered(Some("type")).unwrap();
-    let api_content = skill::load_lookup_filtered(Some("api")).unwrap();
-    let name_content = skill::load_lookup_filtered(Some("name")).unwrap();
+    let type_content = skill::load_lookup_filtered(Some("type"), skill::Language::Rust).unwrap();
+    let api_content = skill::load_lookup_filtered(Some("api"), skill::Language::Rust).unwrap();
+    let name_content = skill::load_lookup_filtered(Some("name"), skill::Language::Rust).unwrap();
 
     // Verify each prefix content contains expected markers
     assert!(type_content.contains("Filtered for prefix: **type-**"));
@@ -325,8 +325,8 @@ fn test_workflow_refactor_composition() {
 #[test]
 fn test_workflow_debug_composition() {
     // Test that debug workflow combines err + mem prefixes
-    let err_content = skill::load_lookup_filtered(Some("err")).unwrap();
-    let mem_content = skill::load_lookup_filtered(Some("mem")).unwrap();
+    let err_content = skill::load_lookup_filtered(Some("err"), skill::Language::Rust).unwrap();
+    let mem_content = skill::load_lookup_filtered(Some("mem"), skill::Language::Rust).unwrap();
 
     // Verify each prefix content contains expected markers
     assert!(err_content.contains("Filtered for prefix: **err-**"));

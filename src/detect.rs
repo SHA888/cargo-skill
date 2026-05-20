@@ -29,12 +29,22 @@ pub enum Agent {
 }
 
 impl Agent {
-    /// Returns the install path for the skill file relative to repo root
+    /// Returns the install path for the Rust skill file relative to repo root
     pub fn skill_path(&self) -> PathBuf {
         match self {
             Agent::ClaudeCode => PathBuf::from(".claude/skills/rust.md"),
             Agent::Cursor => PathBuf::from(".cursor/rules/rust.md"),
             Agent::Windsurf => PathBuf::from(".windsurf/rules/rust.md"),
+            Agent::AgentsMd => PathBuf::from("AGENTS.md"),
+        }
+    }
+
+    /// Returns the install path for the Python skill file relative to repo root
+    pub fn python_skill_path(&self) -> PathBuf {
+        match self {
+            Agent::ClaudeCode => PathBuf::from(".claude/skills/python.md"),
+            Agent::Cursor => PathBuf::from(".cursor/rules/python.md"),
+            Agent::Windsurf => PathBuf::from(".windsurf/rules/python.md"),
             Agent::AgentsMd => PathBuf::from("AGENTS.md"),
         }
     }
@@ -105,6 +115,27 @@ pub fn agents(repo_root: &Path) -> Vec<Agent> {
     }
 
     detected
+}
+
+/// Python project stack detection
+#[derive(Debug, Clone)]
+pub struct PythonStack {
+    pub has_uv: bool,
+}
+
+/// Detect if the repo is a Python project and whether uv is configured
+pub fn python_stack(repo_root: &Path) -> Option<PythonStack> {
+    let pyproject = repo_root.join("pyproject.toml");
+    if !pyproject.exists() {
+        return None;
+    }
+
+    let has_uv = repo_root.join("uv.lock").exists()
+        || fs::read_to_string(&pyproject)
+            .map(|c| c.contains("[tool.uv]"))
+            .unwrap_or(false);
+
+    Some(PythonStack { has_uv })
 }
 
 #[cfg(test)]
@@ -209,5 +240,47 @@ mod tests {
             PathBuf::from(".windsurf/rules/rust.md")
         );
         assert_eq!(Agent::AgentsMd.skill_path(), PathBuf::from("AGENTS.md"));
+    }
+
+    #[test]
+    fn test_python_stack_not_detected() {
+        let temp = TempDir::new().unwrap();
+        let result = python_stack(temp.path());
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_python_stack_detected_no_uv() {
+        let temp = TempDir::new().unwrap();
+        fs::write(temp.path().join("pyproject.toml"), "[tool.poetry]\n").unwrap();
+
+        let result = python_stack(temp.path());
+        assert!(result.is_some());
+        assert!(!result.unwrap().has_uv);
+    }
+
+    #[test]
+    fn test_python_stack_detected_uv_lock() {
+        let temp = TempDir::new().unwrap();
+        fs::write(temp.path().join("pyproject.toml"), "[project]\n").unwrap();
+        fs::write(temp.path().join("uv.lock"), "version = 1\n").unwrap();
+
+        let result = python_stack(temp.path());
+        assert!(result.is_some());
+        assert!(result.unwrap().has_uv);
+    }
+
+    #[test]
+    fn test_python_stack_detected_tool_uv() {
+        let temp = TempDir::new().unwrap();
+        fs::write(
+            temp.path().join("pyproject.toml"),
+            "[tool.uv]\nmanaged = true\n",
+        )
+        .unwrap();
+
+        let result = python_stack(temp.path());
+        assert!(result.is_some());
+        assert!(result.unwrap().has_uv);
     }
 }

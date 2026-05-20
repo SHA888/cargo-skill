@@ -229,6 +229,18 @@ fn cmd_init(dry_run: bool, force: bool) -> Result<()> {
             )));
         }
 
+        // Deploy Python layers if Python stack detected
+        if detect::python_stack(&repo.root).is_some() {
+            deploy::deploy_python(&agents, &repo.root)
+                .context("Failed to deploy Python skill files")?;
+            for agent in &agents {
+                info(&success(&format!(
+                    " deployed Python to {}",
+                    agent.python_skill_path().display()
+                )));
+            }
+        }
+
         // Deploy Claude Code slash commands if ClaudeCode is detected
         if agents.contains(&detect::Agent::ClaudeCode) {
             let commands = deploy::deploy_claude_commands(&repo.root)
@@ -269,6 +281,18 @@ fn format_repo_kind(kind: &detect::RepoKind) -> &'static str {
     }
 }
 
+fn detect_language(repo_root: &std::path::Path) -> skill::Language {
+    // If no Cargo.toml but pyproject.toml exists, use Python
+    let has_cargo = repo_root.join("Cargo.toml").exists();
+    let has_python = detect::python_stack(repo_root).is_some();
+
+    if !has_cargo && has_python {
+        skill::Language::Python
+    } else {
+        skill::Language::Rust
+    }
+}
+
 fn cmd_lookup(prefix: Option<String>) -> Result<()> {
     if let Some(ref p) = prefix {
         info(&format!("Activating Layer 1 with prefix: {}", p));
@@ -279,9 +303,12 @@ fn cmd_lookup(prefix: Option<String>) -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
+    // Detect language
+    let lang = detect_language(&repo.root);
+
     // Load Layer 1 with optional prefix filter
-    let content =
-        skill::load_lookup_filtered(prefix.as_deref()).context("Failed to load skill content")?;
+    let content = skill::load_lookup_filtered(prefix.as_deref(), lang)
+        .context("Failed to load skill content")?;
 
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
@@ -296,9 +323,12 @@ fn cmd_think() -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
+    // Detect language
+    let lang = detect_language(&repo.root);
+
     // Load Layers 1 + 2
     let layer_set = skill::layer::LayerSet::think();
-    let content = skill::load(&layer_set).context("Failed to load skill content")?;
+    let content = skill::load(&layer_set, lang).context("Failed to load skill content")?;
 
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
@@ -313,9 +343,12 @@ fn cmd_write() -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
+    // Detect language
+    let lang = detect_language(&repo.root);
+
     // Load all layers
     let layer_set = skill::layer::LayerSet::write();
-    let content = skill::load(&layer_set).context("Failed to load skill content")?;
+    let content = skill::load(&layer_set, lang).context("Failed to load skill content")?;
 
     // Write to context
     context::write(&repo.root, &content).context("Failed to write context")?;
@@ -351,22 +384,28 @@ fn cmd_debug() -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
+    // Detect language
+    let lang = detect_language(&repo.root);
+
     // Load Layer 1 content filtered by err and mem prefixes
     let mut content = String::new();
 
     // Add filtered Layer 1 content for err prefix
     let err_content =
-        skill::load_lookup_filtered(Some("err")).context("Failed to load err content")?;
+        skill::load_lookup_filtered(Some("err"), lang).context("Failed to load err content")?;
     content.push_str(&err_content);
 
     // Add filtered Layer 1 content for mem prefix
     content.push_str("\n\n---\n\n");
     let mem_content =
-        skill::load_lookup_filtered(Some("mem")).context("Failed to load mem content")?;
+        skill::load_lookup_filtered(Some("mem"), lang).context("Failed to load mem content")?;
     content.push_str(&mem_content);
 
     // Add only the Compiler Error Quick Reference section from Layer 2
-    let layer2_content = include_str!("../assets/rust/layer2.md");
+    let layer2_content = match lang {
+        skill::Language::Rust => include_str!("../assets/rust/layer2.md"),
+        skill::Language::Python => include_str!("../assets/python/layer2.md"),
+    };
     let start = layer2_content
         .find("## Compiler Error Quick Reference")
         .context("Layer 2 is missing '## Compiler Error Quick Reference' section")?;
@@ -405,6 +444,24 @@ fn cmd_status() -> Result<()> {
     }
     if agents.is_empty() {
         info("  (none — create .claude/, .cursor/, .windsurf/, or AGENTS.md)");
+    }
+
+    // Detect Python stack
+    info("\nLanguage stacks:");
+    let has_rust = repo.root.join("Cargo.toml").exists();
+    info(&format!(
+        "  {} Rust",
+        if has_rust {
+            success("")
+        } else {
+            error_style("")
+        }
+    ));
+    if let Some(python) = detect::python_stack(&repo.root) {
+        let uv_note = if python.has_uv { " (uv)" } else { "" };
+        info(&format!("  {} Python{}", success(""), uv_note));
+    } else {
+        info(&format!("  {} Python", error_style("")));
     }
 
     // Check context.md
@@ -488,13 +545,16 @@ fn cmd_workflow(prefixes: &[&str], name: &str) -> Result<()> {
     // Detect repository
     let repo = detect::repo().context("Failed to detect repository")?;
 
+    // Detect language
+    let lang = detect_language(&repo.root);
+
     // Load Layer 1 content filtered by multiple prefixes
     let mut content = String::new();
 
     // Add filtered Layer 1 content for each prefix
     for prefix in prefixes {
-        let prefix_content =
-            skill::load_lookup_filtered(Some(prefix)).context("Failed to load skill content")?;
+        let prefix_content = skill::load_lookup_filtered(Some(prefix), lang)
+            .context("Failed to load skill content")?;
 
         if !content.is_empty() {
             content.push_str("\n\n---\n\n");
@@ -503,7 +563,10 @@ fn cmd_workflow(prefixes: &[&str], name: &str) -> Result<()> {
     }
 
     // Add Layer 2 (reasoning)
-    let layer2_content = include_str!("../assets/rust/layer2.md");
+    let layer2_content = match lang {
+        skill::Language::Rust => include_str!("../assets/rust/layer2.md"),
+        skill::Language::Python => include_str!("../assets/python/layer2.md"),
+    };
     content.push_str("\n\n---\n\n");
     content.push_str(layer2_content);
 

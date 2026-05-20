@@ -132,6 +132,73 @@ pub fn deploy_agent_personas(repo_root: &Path) -> Result<Vec<PathBuf>> {
     Ok(deployed)
 }
 
+/// Deploy Python skill files to all detected agents
+pub fn deploy_python(agents: &[Agent], repo_root: &Path) -> Result<()> {
+    let skill_content = include_str!("../assets/python/layer1.md");
+
+    for agent in agents {
+        match agent {
+            Agent::AgentsMd => deploy_python_to_agents_md(repo_root, skill_content)?,
+            _ => deploy_python_to_file(agent, repo_root, skill_content)?,
+        }
+    }
+
+    Ok(())
+}
+
+/// Deploy Python skill content to a file-based agent (creates parent directories)
+#[allow(dead_code)]
+fn deploy_python_to_file(agent: &Agent, repo_root: &Path, content: &str) -> Result<()> {
+    let path = repo_root.join(agent.python_skill_path());
+
+    // Create parent directories if they don't exist
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("Failed to create directory {}", parent.display()))?;
+    }
+
+    fs::write(&path, content).with_context(|| format!("Failed to write {}", path.display()))?;
+
+    Ok(())
+}
+
+/// Deploy Python skill content to AGENTS.md (append or create)
+#[allow(dead_code)]
+fn deploy_python_to_agents_md(repo_root: &Path, content: &str) -> Result<()> {
+    let path = repo_root.join(Agent::AgentsMd.python_skill_path());
+    let skill_marker = "# Python Layer 1";
+
+    if path.exists() {
+        // Check if skill content already exists (idempotency check)
+        let existing_content = fs::read_to_string(&path)
+            .with_context(|| format!("Failed to read {}", path.display()))?;
+
+        if existing_content.contains(skill_marker) {
+            // Skill content already exists, skip to maintain idempotency
+            return Ok(());
+        }
+
+        // Append to existing file (skill content not found)
+        let mut file = fs::OpenOptions::new()
+            .append(true)
+            .open(&path)
+            .with_context(|| format!("Failed to open {} for append", path.display()))?;
+
+        writeln!(file)?;
+        writeln!(file, "---")?;
+        writeln!(file)?;
+        writeln!(file, "# Python Skill Reference")?;
+        writeln!(file)?;
+        write!(file, "{}", content)?;
+    } else {
+        // Create new file with skill content
+        fs::write(&path, format!("# Python Skill Reference\n\n{}\n", content))
+            .with_context(|| format!("Failed to write {}", path.display()))?;
+    }
+
+    Ok(())
+}
+
 /// Deploy Claude Code slash commands to `.claude/commands/`
 ///
 /// Creates command files for `/skill-lookup`, `/skill-think`, `/skill-write`, `/skill-clear`
@@ -423,5 +490,27 @@ mod tests {
             fs::read_to_string(temp.path().join(".claude/skills/agents/rust-reviewer.md")).unwrap();
 
         assert_eq!(first_content, second_content);
+    }
+
+    #[test]
+    fn test_deploy_python_creates_claude_file() {
+        let temp = TempDir::new().unwrap();
+        deploy_python(&[Agent::ClaudeCode], temp.path()).unwrap();
+
+        let skill_path = temp.path().join(".claude/skills/python.md");
+        assert!(skill_path.exists());
+        let content = fs::read_to_string(&skill_path).unwrap();
+        assert!(content.contains("Layer 1"));
+    }
+
+    #[test]
+    fn test_deploy_python_creates_cursor_file() {
+        let temp = TempDir::new().unwrap();
+        deploy_python(&[Agent::Cursor], temp.path()).unwrap();
+
+        let skill_path = temp.path().join(".cursor/rules/python.md");
+        assert!(skill_path.exists());
+        let content = fs::read_to_string(&skill_path).unwrap();
+        assert!(content.contains("Layer 1"));
     }
 }
