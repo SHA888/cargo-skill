@@ -22,3 +22,7 @@ CLAUDE.md
 .cursor/rules/skill-context.md
 .windsurf/rules/skill-context.md
 .claude/commands/
+
+# Agents and memory
+.claude/
+.harness-mem/
