@@ -149,18 +149,18 @@ Status legend: `[ ]` pending · `[x]` done · `[-]` skipped/deferred
 
 ### Multi-language context
 
-- [ ] 3.8 — Mixed repo support (Rust + Python in same workspace)
+- [x] 3.8 — Mixed repo support (Rust + Python in same workspace)
   - Detect both stacks
   - Deploy both skill files to each agent
-  - `cargo skill lookup err` → prompt user which language if ambiguous
+  - `cargo skill lookup err` → error with hint when ambiguous
   - `cargo skill lookup rust:err` and `cargo skill lookup py:err` as explicit selectors
 
 ### Tests
 
 - [x] 3.9 — Detection tests for Python/uv stack
 - [x] 3.10 — Asset content tests (prefix filter works on Python layer1)
-- [ ] 3.11 — Mixed repo detection tests (both Cargo.toml + pyproject.toml)
-- [ ] 3.12 — Language prompt/selector tests (rust: / py: prefix routing)
+- [x] 3.11 — Mixed repo detection tests (both Cargo.toml + pyproject.toml)
+- [x] 3.12 — Language prompt/selector tests (rust: / py: prefix routing)
 
 ---
 
